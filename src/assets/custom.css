@@ -1,0 +1,53 @@
+.select-icon {
+    display: none;
+}
+
+.alert-tappable {
+    text-align: right;
+    direction: rtl;
+}
+
+.alert-radio-icon, .alert-checkbox-icon {
+    left: auto;
+    right: 13px;
+}
+
+#the_area {
+    background: url(../assets/img/icons/new-arena.png) center no-repeat;
+    width: 28px;
+    height: 26px;
+    margin-right: 16px;
+    background-size: contain;
+}
+
+#inbox {
+    background: url(../assets/img/icons/inbox.png) center no-repeat;
+    width: 30px;
+    height: 20px;
+    margin-left: 3px;
+    margin-right: 16px;
+    background-size: contain;
+}
+
+page-search .scroll-content{
+    margin-top: 59px !important;
+}
+
+
+#notifications {
+    background: url(../assets/img/icons/notifications_ft.png) center no-repeat;
+    width: 28px;
+    height: 22px;
+    margin-right: 16px;
+    background-size: contain;
+}
+
+.right {
+    float: right;
+}
+
+.alert-head {
+    text-align: right !important;
+
+}
+

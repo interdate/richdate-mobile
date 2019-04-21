@@ -1,0 +1,53 @@
+<!--
+  Generated template for the SubscriptionPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+    <ion-navbar>
+        <ion-title>subscription</ion-title>
+    </ion-navbar>
+
+</ion-header>
+
+
+<ion-content>
+    <div class="android" id="innerPageHolder">
+        <div id="massBoxIn" class="prices">
+            <h2>רכישת מנוי בריצ'דייט</h2>
+            <div [innerHtml]="dataPage?.android.textBefore" style="font-size: 13px;color: #c8c8c9;text-align:center;">
+            </div>
+
+            <div *ngIf="dataPage?.android?.form" class="form">{{ dataPage.android.form.text }} <input [(ngModel)]="coupon" type="text" /> <input type="submit" value="{{ dataPage.android.form.button }}" (click)="getPage()"></div>
+
+            <div *ngFor="let product of products" class="subs">
+                <a href="{{product?.url}}" title="title" class="ui-link">
+                    <span style="width: 175px;" class="subsTitle">{{product.title}}</span>
+                    {{product.text}}
+                    <br>
+                    <div class="subsPrice">
+                        ₪<span>{{product.price}}</span>
+                        <span class="month">לחודש</span>
+                    </div><!--subsPrice-->
+                    <div class="subsBut"></div>
+                </a>
+            </div><!--subs-->
+            <div class="clear"><!--clear--></div>
+            <!--<form id="telepay" action="{{ action }}" method="get">
+            </form>-->
+            <div [innerHtml]="dataPage?.android.textAfter" style="font-size: 13px;color: #c8c8c9;text-align:center;">
+            </div>
+        </div><!--result-->
+    </div>
+
+
+</ion-content>
+<ion-footer>
+    <div class="register">
+        <ion-navbar class="footerMenu">
+            <ion-title>register-profile</ion-title>
+        </ion-navbar>
+    </div>
+</ion-footer>
