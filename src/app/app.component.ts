@@ -69,7 +69,8 @@ export class MyApp {
     status: any = '';
     texts: any = {};
     new_message: any = '';
-    isPay: any
+    isPay: any;
+    is2D: any;
     message: any = {};
     avatar: string = '';
     stats: string = '';
@@ -186,11 +187,13 @@ export class MyApp {
                     this.menu_items_footer2[0].count = statistics.fav;//favorited
                     this.menu_items_footer2[1].count = statistics.favedme;//favoritedMe
 
-                    if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'PagePage' && this.status === 'nopay') {
-                        this.status = 1;
+                    this.is2D = data.json().is2D;
+                    this.isPay = data.json().isPay;
+
+                    if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'ContactUsPage'
+                        && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.isPay == 0) {
                         this.nav.setRoot(SubscriptionPage);
                     } else if (this.api.pageName != 'ChangePhotosPage' && this.status === 'noimg') {
-                        this.status = 1;
                         let toast = this.toastCtrl.create({
                             message: "לכניסה לאתר ריצ'דייט יש להעלות תמונה",
                             duration: 3000
@@ -200,7 +203,6 @@ export class MyApp {
                         toast.present();
                         this.nav.setRoot(ChangePhotosPage);
                     } else if (this.api.pageName != 'ChangePhotosPage' && this.api.pageName != 'ActivationPage' && this.status === 'notActivated') {
-                        this.status = 1;
                         this.nav.setRoot(ActivationPage);
                     }
 
@@ -214,7 +216,7 @@ export class MyApp {
                         this.nav.setRoot(HomePage);
                     }
 
-                    if ((this.api.pageName == 'SubscriptionPage' && /*this.status == true*/ this.isPay == 1)) {
+                    if ((this.api.pageName == 'SubscriptionPage' && this.isPay == 1)) {
                         this.nav.setRoot(HomePage);
                     }
 
@@ -617,7 +619,6 @@ export class MyApp {
         }
     }
 
-
     homePage() {
         this.storage.get('user_id').then((val) => {
             if (val) {
@@ -688,7 +689,8 @@ export class MyApp {
     checkStatus() {
         //let page = this.nav.getActive();
 
-        if (!(this.api.pageName == 'ActivationPage') && !(this.api.pageName == 'ContactUsPage') && !(this.api.pageName == 'ChangePhotosPage') && !(this.api.pageName == 'RegistrationThreePage')
+        if (!(this.api.pageName == 'ActivationPage') && !(this.api.pageName == 'ContactUsPage')
+            && !(this.api.pageName == 'ChangePhotosPage') && !(this.api.pageName == 'RegistrationThreePage')
             && !(this.api.pageName == 'RegisterPage') && !(this.api.pageName == 'TermsPage')) {
             if (this.status == 'no_photo') {
 
@@ -757,11 +759,15 @@ export class MyApp {
 
             //let page = this.nav.getActive();
 
-            if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'PagePage' && this.status === 'nopay') {
-                this.status = 1;
+            if (this.api.status != '') {
+                this.status = this.api.status;
+            }
+
+            if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'ContactUsPage'
+                && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.isPay == 0 && this.status == 1) {
                 this.nav.setRoot(SubscriptionPage);
             } else if (this.api.pageName != 'ChangePhotosPage' && this.status === 'noimg') {
-                this.status = 1;
+
                 let toast = this.toastCtrl.create({
                     message: "לכניסה לאתר ריצ'דייט יש להעלות תמונה",
                     duration: 3000
@@ -770,16 +776,16 @@ export class MyApp {
                 toast.present();
                 this.nav.setRoot(ChangePhotosPage);
             } else if (this.api.pageName != 'ChangePhotosPage' && this.api.pageName != 'ActivationPage' && this.status === 'notActivated') {
-                this.status = 1;
                 this.nav.setRoot(ActivationPage);
             }
 
 
-            if (this.api.pageName == 'HomePage') {
+
+         /*   if (this.api.pageName == 'HomePage') {
                 if (this.api.status != '') {
                     this.status = this.api.status;
                 }
-            }
+            }*/
 
             if (this.api.pageName == 'DialogPage' || this.api.pageName == 'SubscriptionPage') {
                 $('.footerMenu').hide();
@@ -856,16 +862,17 @@ export class MyApp {
             }
             this.api.setHeaders(true);
 
-
             this.storage.get('status').then((val) => {
                 if (this.status == '') {
                     this.status = val;
                 }
+
                 this.checkStatus();
                 if (!val) {
                     this.menu_items = this.menu_items_logout;
                     this.is_login = false
-                } else {
+                }
+                else {
                     //this.getStatistics();
                     this.is_login = true;
                     this.menu_items = this.menu_items_login;

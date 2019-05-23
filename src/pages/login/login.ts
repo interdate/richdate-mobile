@@ -11,6 +11,7 @@ import * as $ from "jquery";
 import {SubscriptionPage} from "../subscription/subscription";
 import {ChangePhotosPage} from "../change-photos/change-photos";
 import {ActivationPage} from "../activation/activation";
+import {PasswordRecoveryPage} from "../password-recovery/password-recovery";
 
 /**
  * Generated class for the LoginPage page.
@@ -177,7 +178,7 @@ export class LoginPage {
   }
 
   onPasswordRecoveryPage() {
-    this.navCtrl.push('PasswordRecoveryPage');
+    this.navCtrl.push(PasswordRecoveryPage);
   }
 
   ionViewDidLoad() {

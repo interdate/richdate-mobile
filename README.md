@@ -1,1 +1,1 @@
-SHEDATE-ANDROID
+Richdate-mobile
