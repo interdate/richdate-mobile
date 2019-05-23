@@ -44,6 +44,7 @@ export class ApiQuery {
    // this.url = 'http://10.0.0.12:8100';
     //this.url = 'http://localhost:8100';
     this.url = 'https://m.richdate.co.il/api/v8/index.php';
+
     this.storage.get('user_id').then((val) => {
       this.storage.get('username').then((username) => {
         this.username = username;
