@@ -1,8 +1,6 @@
 import {Component} from "@angular/core";
 import {NavController, NavParams, ToastController} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
-import {Http} from "@angular/http";
-import {Storage} from "@ionic/storage";
 
 
 /*
@@ -23,18 +21,16 @@ export class SettingsPage {
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
                 private toastCtrl: ToastController,
-                public http: Http,
-                public storage: Storage,
                 public api: ApiQuery) {
 
-        this.http.get(api.url + '/user/settings', api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(api.url + '/user/settings', api.setHeaders(true)).subscribe(data => {
             //this.form = data.json().settings;
             this.form.newMessPushNotif = Boolean(parseInt(data.json().settings.newMessPushNotif));
             this.form.userGetMsgToEmail = Boolean(parseInt(data.json().settings.userGetMsgToEmail));
         });
 
 
-        this.storage.get('enableFingerAuth').then((enableFingerAuth) => {
+        this.api.storage.get('enableFingerAuth').then((enableFingerAuth) => {
             if (enableFingerAuth && enableFingerAuth == '1') {
                 // alert('enableFingerAuth' + enableFingerAuth);
                 this.form.fingerprint = 1;
@@ -63,7 +59,7 @@ export class SettingsPage {
 
             this.presentToast();
 
-            this.http.post(this.api.url + '/user/settings/' + name + '/' + value, {}, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/settings/' + name + '/' + value, {}, this.api.setHeaders(true)).subscribe(data => {
             });
 
         } else if (type == 'push') {
@@ -72,13 +68,13 @@ export class SettingsPage {
 
             this.presentToast();
 
-            this.http.post(this.api.url + '/user/settings/' + name + '/' + value, {}, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/settings/' + name + '/' + value, {}, this.api.setHeaders(true)).subscribe(data => {
             });
         } else if (type == 'fingerprint') {
             if (this.form.fingerprint == true) {
-                this.storage.set('enableFingerAuth', '1');
+                this.api.storage.set('enableFingerAuth', '1');
             } else {
-                this.storage.set('enableFingerAuth', '0');
+                this.api.storage.set('enableFingerAuth', '0');
             }
         }
     }

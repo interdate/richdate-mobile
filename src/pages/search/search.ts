@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { HomePage } from '../home/home';
-import { Http } from '@angular/http';
 import { ApiQuery } from '../../library/api-query';
 import {AdvancedsearchPage} from "../advancedsearch/advancedsearch";
 
@@ -20,11 +19,11 @@ import {AdvancedsearchPage} from "../advancedsearch/advancedsearch";
 export class SearchPage {
 
   age: any;
-  areas: Array<{ title: any }>;
-  ages: Array<{ num: number }> = [];
+  areas: any;
+  ages: any = [];
 
   type_search: any = "";
-  form: { form: any } = {
+  form: any = {
     form: {
       username: {value: '',label:''},
       region: { choices: [[]], value: '', label:''},
@@ -44,7 +43,6 @@ export class SearchPage {
     constructor(
       public navCtrl: NavController,
       public navParams: NavParams,
-      public http: Http,
       public api: ApiQuery
       ) {
   
@@ -57,7 +55,7 @@ export class SearchPage {
         this.ages.push({num: i});
       }
   
-      this.http.get( api.url + '/user/form/sreach/', api.setHeaders(true) ).subscribe(data => {
+      this.api.http.get( api.url + '/user/form/sreach/', api.setHeaders(true) ).subscribe(data => {
   
          this.form.form = data.json();
   

@@ -1,6 +1,5 @@
 import {Component} from "@angular/core";
 import {IonicPage, NavController, NavParams} from "ionic-angular";
-import {Http} from "@angular/http";
 import {ApiQuery} from "../../library/api-query";
 import {AdvancedSearchResultPage} from "../advanced-search-result/advanced-search-result";
 
@@ -31,7 +30,6 @@ export class AdvancedsearchPage {
 
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public api: ApiQuery) {
 
         this.api.storage.get('searchParams').then(data => {
@@ -39,7 +37,7 @@ export class AdvancedsearchPage {
             if (data) {
                 this.form = data;
             } else {
-                this.http.get(api.url + '/user/advanced/search', api.setHeaders(true)).subscribe(data => {
+                this.api.http.get(api.url + '/user/advanced/search', api.setHeaders(true)).subscribe(data => {
                     this.form = data.json().form;
                     this.form.heightFrom.value = '';
                     this.form.heightTo.value = '';
@@ -96,7 +94,7 @@ export class AdvancedsearchPage {
     }
 
     /*selectedRegion() {
-     this.http.get(this.api.url + '/search?advanced=1&advanced_search[region]=' + this.form.region.value, this.api.setHeaders(true)).subscribe(data => {
+     this.api.http.get(this.api.url + '/search?advanced=1&advanced_search[region]=' + this.form.region.value, this.api.setHeaders(true)).subscribe(data => {
      this.form.area = data.json().area;
      }, err => {
      console.log("Oops!");

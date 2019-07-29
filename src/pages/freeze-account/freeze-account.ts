@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams, AlertController } from 'ionic-angular';
 import {ApiQuery} from '../../library/api-query';
-import {Storage} from '@ionic/storage';
-import {Http} from '@angular/http';
 import {LoginPage} from "../login/login";
 
 
@@ -26,7 +24,7 @@ export class FreezeAccountPage {
 
   allfields = '';
 
-  constructor(public navCtrl: NavController, private alertCtrl: AlertController, public api: ApiQuery, public navParams: NavParams, public http: Http, public storage: Storage,) {
+  constructor(public navCtrl: NavController, private alertCtrl: AlertController, public api: ApiQuery, public navParams: NavParams) {
 
 }
 
@@ -36,11 +34,11 @@ submit() {
               this.allfields = 'יש להכניס סיבה להקפאה';
           } else {
 
-            var params = JSON.stringify({
+            let params = JSON.stringify({
                'freeze_account_reason': this.form.text.value
            });
 
-           this.http.post(this.api.url + '/freeze', params, this.api.header).subscribe(data => this.validate(data.json()));
+           this.api.http.post(this.api.url + '/freeze', params, this.api.header).subscribe(data => this.validate(data.json()));
 
 
         }

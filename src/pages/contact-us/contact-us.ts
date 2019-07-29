@@ -1,10 +1,7 @@
 import {Component} from '@angular/core';
 import {IonicPage, NavController, NavParams, ToastController} from 'ionic-angular';
 import {ApiQuery} from '../../library/api-query';
-import {Http} from '@angular/http';
-/*
-import { HTTP } from '@ionic-native/http';*/
-import {Storage} from '@ionic/storage';
+
 
 /**
  * Generated class for the ContactUsPage page.
@@ -39,18 +36,16 @@ export class ContactUsPage {
 
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public api: ApiQuery,
-                public storage: Storage,
                 public toastCtrl: ToastController) {
 
-        this.storage.get('password').then((val) => {
+        this.api.storage.get('password').then((val) => {
             if (val) {
                 this.logged_in = true;
             }
         });
 
-        this.storage.get('user_id').then((val) => {
+        this.api.storage.get('user_id').then((val) => {
             if (val) {
                 this.user_id = val;
             }
@@ -64,14 +59,14 @@ export class ContactUsPage {
         } else {
             this.allfields = '';
 
-            var params = {
+            let params = {
                 userId: this.user_id ? this.user_id : 'Unknown',
                 messageToAdmin: this.form.form.text.value,
                 userEmail : this.form.form.email.value,
                 logged_in: this.logged_in
             };
 
-            this.http.post(this.api.url + '/contactUs', params, this.api.header).subscribe(data => this.validate(data.json()));
+            this.api.http.post(this.api.url + '/contactUs', params, this.api.header).subscribe(data => this.validate(data.json()));
         }
 
     }

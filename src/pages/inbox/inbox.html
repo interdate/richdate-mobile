@@ -8,7 +8,7 @@
     <ion-header>
     
       <ion-navbar>
-        <ion-title>inbox</ion-title>
+        <ion-title>RichDate Inbox</ion-title>
       </ion-navbar>
     
     </ion-header>
@@ -16,7 +16,7 @@
     
     <ion-content padding>
       <div class="no_results" *ngIf="users?.length == 0">אין הודעות</div>
-        <ion-list>
+        <ion-list *ngIf="users?.length > 0">
             <ion-card *ngFor="let user of users ; let i = index" [attr.data-index]="i" (click)="toDialogPage(user,i)">
                 <ion-card-content [ngClass]="{'highlight': user.user.userId==='468385291'}">
                     <div class="usr_img" *ngIf="user.user.mainImage" [ngStyle]="{ 'background-image': 'url('  + user.user.mainImage?.url + ')'}" ></div>
@@ -34,7 +34,7 @@
             </ion-card>
         </ion-list>
         <div *ngIf="params.results.loader == true && users?.length > 3" class="loader"><img src="assets/img/loader.gif"></div>
-        <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+        <ion-infinite-scroll *ngIf="users?.length > 0" (ionInfinite)="doInfinite($event)">
             <ion-infinite-scroll-content></ion-infinite-scroll-content>
         </ion-infinite-scroll>
     </ion-content>

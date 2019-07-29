@@ -1,7 +1,6 @@
 import {Component} from "@angular/core";
 import {IonicPage, NavController, NavParams, ToastController} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
-import {Http} from "@angular/http";
 import {DialogPage} from "../dialog/dialog";
 
 /**
@@ -25,7 +24,6 @@ export class FullScreenProfilePage {
     constructor(public toastCtrl: ToastController,
                 public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public api: ApiQuery) {
 
         this.user = navParams.get('user');
@@ -46,29 +44,30 @@ export class FullScreenProfilePage {
         console.log('ionViewDidLoad FullScreenProfilePage');
     }
 
-    toDialog(user) {
+    toDialog() {
         this.navCtrl.push(DialogPage, {
-            user: user
+            user: this.user
         });
     }
 
-    addFavorites(user) {
-        if (user.is_in_favorite_list == true) {
-            user.is_in_favorite_list  = false;
-            var url = this.api.url + '/user/managelists/favi/0/' + this.user.userId;
-            var message = 'משתמש הוסר בהצלחה מהמועדפים';
-            var params = JSON.stringify({
+    addFavorites() {
+        let url, message, params;
+        if (this.user.is_in_favorite_list == true) {
+            this.user.is_in_favorite_list  = false;
+            url = this.api.url + '/user/managelists/favi/0/' + this.user.userId;
+            message = 'משתמש הוסר בהצלחה מהמועדפים';
+            params = JSON.stringify({
                 list: 'Unfavorite'
             });
         } else {
-            user.is_in_favorite_list  = true;
+            this.user.is_in_favorite_list  = true;
 
-            var params = JSON.stringify({
+            params = JSON.stringify({
                 list: 'Favorite'
             });
 
-            var  url = this.api.url + '/user/managelists/favi/1/' + this.user.userId;
-            var message = 'משתמש הוסף בהצלחה למועדפים';
+            url = this.api.url + '/user/managelists/favi/1/' + this.user.userId;
+            message = 'משתמש הוסף בהצלחה למועדפים';
         }
 
         let toast = this.toastCtrl.create({
@@ -78,25 +77,25 @@ export class FullScreenProfilePage {
 
         toast.present();
 
-        this.http.post(url, params, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(url, params, this.api.setHeaders(true)).subscribe(data => {
             console.log(data);
         });
     }
 
-    addLike(user) {
-        user.isAddLike = true;
+    addLike() {
+        this.user.isAddLike = true;
         let toast = this.toastCtrl.create({
-            message: ' עשית לייק ל' + user.username,
+            message: ' עשית לייק ל' + this.user.username,
             duration: 2000
         });
 
         toast.present();
 
         let params = JSON.stringify({
-            toUser: user.id,
+            toUser: this.user.id,
         });
 
-        this.http.post(this.api.url + '/api/v1/likes/' + user.id, params, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url + '/api/v1/likes/' + this.user.id, params, this.api.setHeaders(true)).subscribe(data => {
             console.log(data);
         }, err => {
             console.log("Oops!");

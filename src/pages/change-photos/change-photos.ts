@@ -4,14 +4,11 @@ import {
     NavController,
     NavParams,
     ActionSheetController,
-    AlertController,
-    LoadingController
+    AlertController
 } from "ionic-angular";
 import {Camera} from "@ionic-native/camera";
 import {FileTransfer} from "@ionic-native/file-transfer";
 import {ApiQuery} from "../../library/api-query";
-import {Http} from "@angular/http";
-import {Storage} from "@ionic/storage";
 import {HomePage} from "../home/home";
 import * as $ from "jquery";
 import {TermsPage} from "../terms/terms";
@@ -27,8 +24,7 @@ import {TermsPage} from "../terms/terms";
 @IonicPage()
 @Component({
     selector: 'page-change-photos',
-    templateUrl: 'change-photos.html',
-    providers: [Camera, FileTransfer]
+    templateUrl: 'change-photos.html'
 })
 export class ChangePhotosPage {
 
@@ -39,34 +35,31 @@ export class ChangePhotosPage {
     password: any = false;
     new_user: any = false;
     gender: any;
-    dataPage: { noPhoto: any, texts: any, images: Array<{ _id: string, items: {}, url: string, imgValidated: string, main: string}> };
+    dataPage: any;
     description: any;
 
     constructor(public actionSheetCtrl: ActionSheetController,
                 public navCtrl: NavController,
                 public navParams: NavParams,
                 public alertCtrl: AlertController,
-                public http: Http,
                 public api: ApiQuery,
-                public storage: Storage,
-                public loadingCtrl: LoadingController,
                 public camera: Camera,
-                public  fileTransfer: FileTransfer) {
+                public fileTransfer: FileTransfer) {
 
         if (navParams.get('new_user')) {
             this.new_user = 1;
             this.api.storage.set('new_user', 1);
         }
-        this.storage.get('user_id').then((val) => {
-            this.storage.get('username').then((username) => {
+        this.api.storage.get('user_id').then((val) => {
+            this.api.storage.get('username').then((username) => {
                 this.username = username;
             });
-            this.storage.get('password').then((password) => {
+            this.api.storage.get('password').then((password) => {
                 this.password = password;
             });
         });
 
-        this.storage.get('new_user').then((val) => {
+        this.api.storage.get('new_user').then((val) => {
             if (val) {
                 this.new_user = val;
             } else {
@@ -110,7 +103,7 @@ export class ChangePhotosPage {
 
     getPageData() {
 
-        this.http.get(this.api.url + '/user/images', this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/images', this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
 
             this.dataPage = data.json();
             this.description = data.json().texts.description;
@@ -127,20 +120,26 @@ export class ChangePhotosPage {
     }
 
     postPageData(type, params) {//not active
-        var data: any;
+        let data: any, action;
         if (type == 'setMain') {
-            var action = "setMain";
+            action = "setMain";
             console.log('Param', params);
             data = JSON.stringify({setMain: params.id});
 
-        } else if ('deletePage') {
-            var action = "delete";
+        } else if (type == 'deleteImage') {
+            action = "delete";
             data = JSON.stringify({
                 //delete: params.id
             });
+        } else if (type == 'setPrivate'){
+            action = "private";
+            data = JSON.stringify({
+                private: params.id,
+                set: (params.private == '0') ? 1 : 0
+            });
         }
 
-        this.http.post(this.api.url + '/user/images/' + action + '/' + params.id, data, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/images/' + action + '/' + params.id, data, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
 
             if (type != 'setMain') {
                 this.dataPage = data.json();
@@ -158,13 +157,23 @@ export class ChangePhotosPage {
 
         let mainOpt = [];
 
-        if (photo.main == 0) {
+        if (photo.main == '0' && photo.isValid == '1') {
 
             mainOpt.push({
-                    text: 'קבע כראשית',
-                    icon: 'contact',
+                text: 'קבע כראשית',
+                icon: 'contact',
+                handler: () => {
+                    this.postPageData('setMain', photo);
+                }
+            });
+        }
+
+        if(this.dataPage.vip == '1'){
+            mainOpt.push({
+                    text: (photo.private == '0') ? this.dataPage.texts.set_as_private : this.dataPage.texts.set_as_not_private,
+                    icon: (photo.private == '0') ? 'md-eye-off' : 'md-eye',
                     handler: () => {
-                        this.postPageData('setMain', photo);
+                        this.postPageData('setPrivate', photo);
                     }
                 }
             );
@@ -187,7 +196,7 @@ export class ChangePhotosPage {
             }
         });
 
-        var status = photo.isValid == 1 ?
+        let status = photo.isValid == 1 ?
             this.dataPage.texts.approved : this.dataPage.texts.waiting_for_approval;
 
         let actionSheet = this.actionSheetCtrl.create({
@@ -302,7 +311,7 @@ export class ChangePhotosPage {
                 };
 
                 //that.api.setHeaders(true);
-                that.api.http2.post(that.api.url + '/user/image', fd, header).subscribe((res: any) => {
+                that.api.http1.post(that.api.url + '/user/image', fd, header).subscribe((res: any) => {
                     that.getPageData();
                     that.api.hideLoad();
                 }, (err) => {
@@ -434,44 +443,41 @@ export class ChangePhotosPage {
 
     safeHtml(el): any {
         let html = this.description;
-        let div: any = document.createElement('div');
+        //let div: any = document.createElement('div');
 
         return html.innerHTML;
 
     }
 
+    /*
     uploadPhoto(url) {
+        this.api.showLoad();
 
-        let loading = this.loadingCtrl.create({
-            content: 'אנא המתן...'
-        });
-
-        loading.present();
-
-        this.storage.get('user_id').then((val) => {
+        this.api.storage.get('user_id').then((val) => {
 
             let options = {
                 fileKey: "photo",
                 fileName: 'test.jpg',
                 chunkedMode: false,
                 mimeType: "image/jpg",
-                headers: {Authorization: "Basic " + btoa(encodeURIComponent(this.username) + ":" + this.password)}/*@*/
+                headers: {Authorization: "Basic " + btoa(encodeURIComponent(this.username) + ":" + this.password)}
             };
 
             const filetransfer = this.fileTransfer.create();
 
             filetransfer.upload(url, this.api.url + '/user/image', options).then((entry) => {
                 this.navCtrl.push(ChangePhotosPage, {});
-                loading.dismiss();
+                this.api.hideLoad();
             }, (err) => {
                 //alert(JSON.stringify(err));
-                loading.dismiss();
+                this.api.hideLoad();
             });
         });
     }
+    */
 
     onHomePage() {
-        this.storage.remove('new_user');
+        this.api.storage.remove('new_user');
         this.navCtrl.push(HomePage);
     }
 

@@ -1,4 +1,4 @@
-import {AngularFireModule} from "angularfire2";
+import { AngularFireModule } from "angularfire2";
 import "firebase/messaging";
 import {firebaseConfig} from "../environment";
 import {FirebaseMessagingProvider} from "../providers/firebase-messaging";
@@ -57,6 +57,9 @@ import {RegisterPage} from "../pages/register/register";
 import {SubscriptionPage} from "../pages/subscription/subscription";
 import {ActivationPage} from "../pages/activation/activation";
 import {FullScreenProfilePage} from "../pages/full-screen-profile/full-screen-profile";
+import {Market} from "@ionic-native/market";
+import {Push} from "@ionic-native/push";
+import {ImagesPageModule} from "../pages/images/images.module";
 
 @NgModule({
   declarations: [
@@ -127,7 +130,8 @@ import {FullScreenProfilePage} from "../pages/full-screen-profile/full-screen-pr
     PageModule,
     PasswordRecoveryPageModule,
     RegisterPageModule,
-    SearchPageModule
+    SearchPageModule,
+    ImagesPageModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -148,7 +152,8 @@ import {FullScreenProfilePage} from "../pages/full-screen-profile/full-screen-pr
     Camera,
     FirebaseMessagingProvider,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    ApiQuery, Media, File
+    ApiQuery, Media, File,
+    Market, Push
   ]
 })
 export class AppModule {

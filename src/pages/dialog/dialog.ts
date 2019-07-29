@@ -1,15 +1,16 @@
 import {Component, ViewChild} from "@angular/core";
-import {IonicPage, NavController, NavParams, ToastController, Content, AlertController, TextInput} from "ionic-angular";
+import {IonicPage, NavController, NavParams, ToastController, Content, TextInput} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
-import {Http} from "@angular/http";
 import {Media} from "@ionic-native/media";
 import {File} from "@ionic-native/file";
 import {FileTransfer} from "@ionic-native/file-transfer";
 import {Device} from "@ionic-native/device";
-import {Storage} from "@ionic/storage";
 import {SubscriptionPage} from "../subscription/subscription";
 import {AdminMessagesPage} from "../admin-messages/admin-messages";
 import {ProfilePage} from "../profile/profile";
+import {ImagesPage} from "../images/images";
+import {HomePage} from "../home/home";
+import { DomSanitizer } from '@angular/platform-browser';
 /**
  * Generated class for the DialogPage page.
  *
@@ -17,20 +18,20 @@ import {ProfilePage} from "../profile/profile";
  * Ionic pages and navigation.
  */
 
-declare var $: any;
+import * as $ from "jquery";
+import {FullScreenProfilePage} from "../full-screen-profile/full-screen-profile";
 
 @IonicPage()
 @Component({
     selector: 'page-dialog',
-    templateUrl: 'dialog.html',
-    providers: [FileTransfer]
+    templateUrl: 'dialog.html'
 })
 export class DialogPage {
     @ViewChild(Content) content: Content;
     @ViewChild('dialog_msg') messageInput: TextInput;
 
     user: any;
-    users: Array<{ id: string, isOnline: string, nick_name: string, image: string }>;
+    users: any;
     texts: any = {a_conversation_with: '', title: '', photo: ''};
     message: any;
     messages: any; //Array<{ id: string, alert: '', isRead: any, text: string, dateTime: string, from: any, voiceUrl: string }>; //, duration:number
@@ -60,59 +61,68 @@ export class DialogPage {
 
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public toastCtrl: ToastController,
                 public api: ApiQuery,
                 public media: Media,
                 public file: File,
-                public alertCtrl: AlertController,
                 public device: Device,
                 public  fileTransfer: FileTransfer,
-                public storage: Storage) {
+                private sanitizer: DomSanitizer) {
 
         /*this.user = navParams.get('user');
 
         this.getPage();
 
-        this.storage.get('user_id').then((val) => {
-            this.storage.get('username').then((username) => {
+        this.api.storage.get('user_id').then((val) => {
+            this.api.storage.get('username').then((username) => {
                 this.username = username;
             });
-            this.storage.get('password').then((password) => {
+            this.api.storage.get('password').then((password) => {
                 this.password = password;
             });
         });*/
 
         if(navParams.get('user')) {
             this.user = navParams.get('user');
-            this.api.storage.get('user_data').then((val) => {
-                this.username = val.username;
-                this.password = val.password;
+            // this.api.storage.get('user_data').then((val) => {
+            //     this.username = val.username;
+            //     this.password = val.password;
+            // });
+            this.api.storage.get('user_id').then((val) => {
+                this.api.storage.get('username').then((username) => {
+                    this.username = username;
+                });
+                this.api.storage.get('password').then((password) => {
+                    this.password = password;
+                });
             });
             this.getPage();
         }else{
-            this.user = {
-                id: navParams.get('id')
-            };
+            if(navParams.get('id')) {
+                this.user = {
+                    id: navParams.get('id')
+                };
 
 
-            this.storage.get('user_id').then((val) => {
-                this.storage.get('username').then((username) => {
-                    this.username =  username;
+                this.api.storage.get('user_id').then((val) => {
+                    this.api.storage.get('username').then((username) => {
+                        this.username = username;
+                    });
+                    this.api.storage.get('password').then((password) => {
+                        this.password = password;
+
+                        let that = this;
+
+                        setTimeout(function () {
+                            that.api.setHeaders(true, that.username, that.password);
+                            that.getPage();
+                        }, 500);
+
+                    });
                 });
-                this.storage.get('password').then((password) => {
-                    this.password =  password;
-
-                    let that = this;
-
-                    setTimeout(function () {
-                        that.api.setHeaders(true,that.username,that.password);
-                        that.getPage();
-                    },500);
-
-                });
-            });
-
+            }else{
+                this.navCtrl.push(HomePage);
+            }
         }
 
         $("#target").focus(function () {
@@ -123,6 +133,44 @@ export class DialogPage {
             // $('.scroll-content, .fixed-content').css({'margin-bottom': '65px'});
             this.messageInput.setFocus();
             this.scrollToBottom();
+        });
+    }
+
+    checkedImg(html) {
+        return ($('<div>' + html + '</div>').find('a img').length > 0) ? true : false;
+    }
+
+    msgToArr(html){
+        let res: any = {photos: [], text: ''};
+        let div: any = document.createElement('div');
+        div.innerHTML = html;
+        $(div).find('a img').each(function () {
+            res.photos.push({src:$(this).attr('src')});
+            $(this).parent('a').remove();
+        });
+        //$(div).find('a').remove();
+        res.text = this.sanitizer.bypassSecurityTrustHtml(div.innerHTML);
+        return res;
+    }
+
+    openMyPhotos(){
+        console.log("start");
+        let imageModal = this.api.modalCtrl.create(ImagesPage, {data: this.data});
+        imageModal.present();
+
+        imageModal.onDidDismiss(data => {
+            console.log("end");
+            if (data && data.message != '') {
+                //let temp = this.message;
+                this.message = data.message;
+                this.sendMessage();
+                // let that = this;
+                // setTimeout(
+                //     function () {
+                //         that.message = temp;
+                //     },100
+                // );
+            }
         });
     }
 
@@ -140,7 +188,7 @@ export class DialogPage {
     }
 
     subscription() {
-        this.storage.get('user_id').then((user_id) => {
+        this.api.storage.get('user_id').then((user_id) => {
             this.navCtrl.push(SubscriptionPage);
         });
     }
@@ -153,10 +201,21 @@ export class DialogPage {
         var userId = typeof this.user.userId != "undefined" ? this.user.userId : this.user.id;
         this.reciver_id = userId;
 
-        this.http.get(this.api.url + '/user/chat/' + userId, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/chat/' + userId, this.api.setHeaders(true)).subscribe(data => {
             this.user = data.json().user;
             /*this.texts = data.json().texts;*/
-            this.messages = data.json().chat.items;
+            // if(this.messages){
+            //     data.json().chat.items.forEach(mess => {
+            //         let index = this.messages.indexOf(mess);
+            //         if(index == '-1') {
+            //             this.messages.push(mess);
+            //         }else{
+            //             this.messages[index] = mess;
+            //         }
+            //     });
+            // }else {
+                this.messages = data.json().chat.items;
+            // }
             this.data = data.json();
             this.countNewMess = data.json().chat.newMess;
             this.alert = data.json().blacklist != '' ? data.json().blacklist : '';
@@ -169,7 +228,7 @@ export class DialogPage {
     }
 
     deleteMsg(message) {
-        this.http.post(this.api.url + '/user/message/delete/' + message.id, {}, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/message/delete/' + message.id, {}, this.api.setHeaders(true)).subscribe(data => {
             this.getPage();
         });
     }
@@ -184,7 +243,7 @@ export class DialogPage {
 
     useFreePointToReadMessage(message) {
         let index = this.api.functiontofindIndexByKeyValue(this.messages, 'id', message.id);
-        this.http.get(this.api.url + '/user/chat/useFreePointToReadMessage/' + message.id, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/chat/useFreePointToReadMessage/' + message.id, this.api.setHeaders(true)).subscribe(data => {
             this.messages[index].text = data.json().messageText;
             this.setMessagesAsRead([message.id]);
             if (!data.json().userHasFreePoints) {
@@ -199,7 +258,7 @@ export class DialogPage {
             unreadMessages: unreadMessages
         });
 
-        this.http.post(this.api.url + '/user/messenger/setMessagesAsRead', params, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/messenger/setMessagesAsRead', params, this.api.setHeaders(true)).subscribe(data => {
         });
     }
 
@@ -220,7 +279,7 @@ export class DialogPage {
      */
     sendPush() {
         var userId = typeof this.user.userId != "undefined" ? this.user.userId : this.user.id;
-        this.http.post(this.api.url + '/user/push/' + userId, {}, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/push/' + userId, {}, this.api.setHeaders(true)).subscribe(data => {
         });
     }
 
@@ -258,7 +317,7 @@ export class DialogPage {
 
             } else {
 
-                var params = JSON.stringify({
+                let params = JSON.stringify({
                     message: this.message
                 });
 
@@ -268,7 +327,7 @@ export class DialogPage {
 
                 var userId = typeof this.user.userId != "undefined" ? this.user.userId : this.user.id;
 
-                this.http.post(this.api.url + '/user/chat/' + userId, params, this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.post(this.api.url + '/user/chat/' + userId, params, this.api.setHeaders(true)).subscribe(data => {
 
                     if (data.json().status == 'chat') {
                         this.messages.push({
@@ -475,9 +534,18 @@ export class DialogPage {
 
     getNewMessages() {
 
-        this.http.get(this.api.url + '/user/chat/' + this.reciver_id + '/' + this.contactCurrentReadMessagesNumber + '/refresh', this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/chat/' + this.reciver_id + '/' + this.contactCurrentReadMessagesNumber + '/refresh', this.api.setHeaders(true)).subscribe(data => {
             this.contactCurrentReadMessagesNumber = data.json().contactCurrentReadMessagesNumber;
             if (data.json().chat) {
+                //this.messages = [];
+                // data.json().chat.items.forEach(mess => {
+                //     let index = this.messages.indexOf(mess);
+                //     if(index == '-1') {
+                //         this.messages.push(mess);
+                //     }else{
+                //         this.messages[index] = mess;
+                //     }
+                // });
                 this.messages = data.json().chat.items;
                 this.countNewMess = data.json().chat.newMess;
 
@@ -503,7 +571,7 @@ export class DialogPage {
                 }
                 this.userHasFreePoints = data.json().chat.userHasFreePoints;
 
-                let that = this;
+                //let that = this;
 
 
                 if (data.json().isNewMess) {
@@ -517,22 +585,22 @@ export class DialogPage {
     }
 
     sandReadMessage() {
-        var params = JSON.stringify({
+        let params = JSON.stringify({
             message: 'ok-1990234'
         });
 
-        this.http.post(this.api.url + '/api/v1/sends/' + this.user.id + '/messages', params, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url + '/api/v1/sends/' + this.user.id + '/messages', params, this.api.setHeaders(true)).subscribe(data => {
         });
     }
 
     readMessagesStatus() {
         //alert(this.notReadMessage.length);
         if (this.notReadMessage.length > 0) {
-            var params = JSON.stringify({
+            let params = JSON.stringify({
                 messages: this.notReadMessage
             });
 
-            this.http.post(this.api.url + '/api/v1/checks/messages', params, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/api/v1/checks/messages', params, this.api.setHeaders(true)).subscribe(data => {
 
                 for (let i = 0; i < this.messages.length; i++) {
                     //if (data.json().readMessages.indexOf(this.messages[i].id) !== '-1') {
@@ -571,7 +639,8 @@ export class DialogPage {
             this.user.id = this.user.userId;
 
             this.navCtrl.push(ProfilePage, {
-                user: this.user
+                user: this.user,
+                id: this.user.id
             });
         }
 
@@ -598,6 +667,10 @@ export class DialogPage {
             $('textarea').val('');
         });
 
+    }
+
+    preview(url){
+        this.navCtrl.push(FullScreenProfilePage,{user: {userId:0,photos:[{url:url}]}});
     }
 
 }

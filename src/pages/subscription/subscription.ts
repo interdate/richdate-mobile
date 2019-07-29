@@ -1,9 +1,9 @@
-import {Component} from "@angular/core";
-import {IonicPage, NavController, NavParams} from "ionic-angular";
+import {Component, ViewChild} from "@angular/core";
+import {Content, IonicPage, NavController, NavParams} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
-import {Http} from "@angular/http";
 import {Page} from "../page/page";
 import * as $ from 'jquery';
+import {InAppBrowser} from "@ionic-native/in-app-browser";
 
 /**
  * Generated class for the SubscriptionPage page.
@@ -17,6 +17,7 @@ import * as $ from 'jquery';
     templateUrl: 'subscription.html',
 })
 export class SubscriptionPage {
+    @ViewChild(Content) content: Content;
 
     public dataPage: any;
     is_showed: any;
@@ -24,11 +25,13 @@ export class SubscriptionPage {
     action: any;
     products: any = [];
     public coupon: any;
+    public chooseProduct: any;
+    public call: any = 0;
 
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
-                public api: ApiQuery) {
+                public api: ApiQuery,
+                private iab: InAppBrowser) {
 
         this.getPage();
     }
@@ -37,29 +40,63 @@ export class SubscriptionPage {
         this.navCtrl.push(Page, {pageId: pageId});
     }
 
-    goto(product) {
-        this.api.showLoad();
+    chooseVip(product){
+        if(!product.urlVip || product.urlVip == '') {
+            this.goto(product, false);
+        }else {
+            this.chooseProduct = product;
+            this.content.scrollToTop(300);
+        }
+    }
+
+    goto(product, vip = false) {
+        delete this.chooseProduct;
+        this.content.scrollToTop(300);
+        let payUrl = (vip) ? product.urlVip : product.url;
+        let browser = this.iab.create(payUrl);
+
         var that = this;
-        this.action = product.url;
-        //window.open(product.url, '_blank');
-        setTimeout(function () {
-            $('#telepay').submit();
-            that.api.hideLoad();
-        }, 100);
+
+        let checkStatus = setInterval(
+            function(){
+                console.log('Payment status: ' + that.api.isPay);
+                that.api.http.post(that.api.url + '/user/login/', '', that.api.setHeaders1(true)).subscribe((data: any) => {
+                    if(data.isPay == '1') {
+                        that.api.isPay = data.isPay;
+                        clearInterval(checkStatus);
+                        setTimeout(
+                            function () {
+                                browser.close();
+                                $('ion-header .logo').click();
+                            }, 3000
+                        )
+                    }
+
+                }, err => {
+                    console.log(err);
+
+                });
+
+
+            }, 3000);
+    }
+
+    backChoose(){
+        delete this.chooseProduct;
     }
 
     getPage() {
-
+        this.call++;
         //alert(this.coupon);
         this.api.showLoad();
         let coupon = !this.coupon ? '0' : this.coupon;
         this.coupon = '';
-        this.http.get(this.api.url + '/user/subscriptions/' + coupon + '?mobile=1', this.api.setHeaders(true)).subscribe((data:any) => {
+        this.api.http1.get(this.api.url + '/user/subscriptions/' + coupon + '?mobile=1', this.api.setHeaders1(true)).subscribe((data:any) => {
 
-            this.products = data.json().subscription.payments;
-            this.dataPage = data.json().subscription;
-
-                this.api.hideLoad();
+            delete this.chooseProduct;
+            this.products = data.subscription.payments;
+            this.dataPage = data.subscription;
+            this.api.hideLoad();
         });
     }
 

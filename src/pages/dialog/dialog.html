@@ -7,7 +7,7 @@
 <ion-header>
 
     <ion-navbar>
-        <ion-title>dialog</ion-title>
+        <ion-title>RichDate - שיחה</ion-title>
     </ion-navbar>
 </ion-header>
 
@@ -19,8 +19,9 @@
     <ion-card>
         <ion-item>
             <p class="dialog-avatar" tappable *ngIf="user?.mainImage != ''" (click)="toProfilePage()"
-               [ngStyle]="{ 'background-image': 'url(' + user?.mainImage?.url + ')'}"> {{'שיחה עם ' +
-                user?.nickName}}</p>
+               [ngStyle]="{ 'background-image': 'url(' + user?.mainImage?.url + ')'}" [ngClass]="{'private': user.mainImage?.private == '1'}">
+                {{'שיחה עם ' + user?.nickName}}
+            </p>
             <p class="dialog-avatar" *ngIf="user?.mainImage == ''" tappable (click)="toProfilePage()"
                [ngStyle]="{ 'background-image': 'url(' + api.url + '/images/no_photo_' + user.gender + '.jpg' + ')'}">
                 {{user?.nickName}}</p>
@@ -35,7 +36,14 @@
                     <ion-col
                             *ngIf="!msg.audio && msg?.text != 'לא ניתן לצפות בהודעה. לרכישת מנוי לחצי כאן' && msg?.text != 'לא ניתן לצפות בהודעה. לרכישת מנוי לחצי כאן או השתמשי בנקודה לקריאת הודעות'"
                             class="text" width-75>
-                        <ion-card-content [innerHTML]="msg?.text" item-left>
+<!--                        <ion-card-content [innerHTML]="msg?.text" item-left>-->
+<!--                        </ion-card-content>-->
+                        <ion-card-content *ngIf="checkedImg(msg?.text) === false" item-left [innerHTML]="msg?.text">
+                        </ion-card-content>
+                        <ion-card-content *ngIf="checkedImg(msg?.text) !== false">
+                            <div *ngFor="let img of msgToArr(msg?.text).photos" class="photo" [ngStyle]="{ 'background-image': 'url(' + img.src + '&face=1' + ')'}" (click)="preview(img.src)">
+                            </div>
+                            <div [innerHTML]="msgToArr(msg?.text)?.text"></div>
                         </ion-card-content>
                     </ion-col>
                     <ion-col *ngIf="msg?.text == 'לא ניתן לצפות בהודעה. לרכישת מנוי לחצי כאן'"
@@ -121,7 +129,8 @@
     </div>
 </ion-content>
 <ion-footer>
-    <ion-toolbar id="form-dialog">
+    <ion-toolbar id="form-dialog" *ngIf="user">
+        <div class="addPhoto" *ngIf="data?.chat?.vip == '1'" tappable (click)="openMyPhotos()"></div>
         <ion-textarea id="dialog-msg" (keyup)="countCharacters($event)" #dialog_msg (ionFocus)="onFocus()"
                       [(ngModel)]="message" placeholder="" item-left></ion-textarea>
         <button class="send-msg" (click)="sendMessage()" ion-button color="danger">שלח</button>

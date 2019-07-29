@@ -1,11 +1,10 @@
 import {Component, ViewChild} from "@angular/core";
-import {NavController, NavParams, Nav, ToastController, Content, LoadingController} from "ionic-angular";
-import {Http} from "@angular/http";
+import {NavController, NavParams, Nav, ToastController, Content} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
-import {Storage} from "@ionic/storage";
 import {FullScreenProfilePage} from "../full-screen-profile/full-screen-profile";
 import {DialogPage} from "../dialog/dialog";
-declare var $: any;
+import * as $ from "jquery";
+import {RegisterPage} from "../register/register";
 /**
  * Generated class for the ProfilePage page.
  *
@@ -23,11 +22,11 @@ export class ProfilePage {
 
     isAbuseOpen: any = false;
 
-    user: any = {};
+    user: any = { currentUser: true };
 
-    texts: { lock: any, unlock: any } = {lock: '', unlock: ''};
+    texts: any = {lock: '', unlock: ''};
 
-    formReportAbuse: { title: any, buttons: { cancel: any, submit: any }, text: { label: any, name: any, value: any } } =
+    formReportAbuse: any =
     {title: '', buttons: {cancel: '', submit: ''}, text: {label: '', name: '', value: ''}};
 
     myId: any = false;
@@ -38,24 +37,11 @@ export class ProfilePage {
     constructor(public toastCtrl: ToastController,
                 public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
-                public loadingCtrl: LoadingController,
-                public api: ApiQuery,
-                public storage: Storage) {
-
-        this.storage = storage;
-
-
-        let loading = this.loadingCtrl.create({
-            content: 'אנא המתן...'
-        });
-
-        //loading.present();
+                public api: ApiQuery) {
+        this.api.pageName = 'ProfilePage';
 
         var user = navParams.get('user');
-
-        let userId = navParams.get('userId');
-
+        let userId = navParams.get('id');
 
         if (user && typeof user.photoLarge != 'undefined') {
             user.photos = [{url: user.photoLarge}];
@@ -70,29 +56,29 @@ export class ProfilePage {
         if (user && user.id) {
 
             this.user = user;
-            this.storage.get('username').then((username) => {
-                this.storage.get('password').then((password) => {
+            this.api.storage.get('username').then((username) => {
+                this.api.storage.get('password').then((password) => {
 
-                    this.http.get(api.url + '/user/profile/' + this.user.id, api.setHeaders(true,username,password)).subscribe(data => {
+                    this.api.http.get(api.url + '/user/profile/' + this.user.id, api.setHeaders(true,username,password)).subscribe(data => {
                         this.user = data.json();
                         this.formReportAbuse = data.json().formReportAbuse;
                         this.texts = data.json().texts;
-                        loading.dismiss();
+                        this.api.hideLoad();
                         this.imageClick = true;
                     });
                 });
             });
         } else {
 
-            this.storage.get('user_id').then((val) => {
+            this.api.storage.get('user_id').then((val) => {
                 if (val) {
                     this.myId = val;
-                    this.http.get(api.url + '/user/profile/' + this.myId, api.setHeaders(true)).subscribe(data => {
+                    this.api.http.get(api.url + '/user/profile/' + this.myId, api.setHeaders(true)).subscribe(data => {
                         this.user = data.json();
 
                         this.formReportAbuse = data.json().formReportAbuse;
                         this.texts = data.json().texts;
-                        loading.dismiss();
+                        this.api.hideLoad();
                         this.imageClick = true;
                     });
                 }
@@ -120,152 +106,172 @@ export class ProfilePage {
         this.content.scrollTo(0, this.content.getContentDimensions().scrollHeight, 300);
     }
 
-    /*addFavorites(user) {
-
-     if (!user.is_in_favorite_list) {
-     user.is_in_favorite_list = true;
-
-
-     let params = JSON.stringify({
-     list: 'Favorite'
-     });
-
-     this.http.post(this.api.url + '/user/managelists/favi/1/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
-     let toast = this.toastCtrl.create({
-     message: data.json().success,
-     duration: 3000
-     });
-
-     toast.present();
-     });
-     }
-     }*/
-
-    addFavorites(user) {
+    addFavorites() {
         // this.user.isAddFavorite = true;
 
-        if (user.is_in_favorite_list == true) {
-            user.is_in_favorite_list = false;
-            var url = this.api.url + '/user/managelists/favi/0/' + this.user.userId;
-            var message = 'משתמש הוסר בהצלחה מהמועדפים';
-            var params = JSON.stringify({
-                list: 'Unfavorite'
-            });
-        } else {
-            user.is_in_favorite_list = true;
-
-            var params = JSON.stringify({
-                list: 'Favorite'
-            });
-
-            var url = this.api.url + '/user/managelists/favi/1/' + this.user.userId;
-            var message = 'משתמש הוסף בהצלחה למועדפים';
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
         }
+        else {
+            let url, message, params;
+            if (this.user.is_in_favorite_list == true) {
+                this.user.is_in_favorite_list = false;
+                url = this.api.url + '/user/managelists/favi/0/' + this.user.userId;
+                message = 'משתמש הוסר בהצלחה מהמועדפים';
+                params = JSON.stringify({
+                    list: 'Unfavorite'
+                });
+            } else {
+                this.user.is_in_favorite_list = true;
 
-        let toast = this.toastCtrl.create({
-            message: user.nickName + ' ' + message,
-            duration: 2000
-        });
+                params = JSON.stringify({
+                    list: 'Favorite'
+                });
 
-        console.log(url);
+                url = this.api.url + '/user/managelists/favi/1/' + this.user.userId;
+                message = 'משתמש הוסף בהצלחה למועדפים';
+            }
 
-        toast.present();
+            let toast = this.toastCtrl.create({
+                message: this.user.nickName + ' ' + message,
+                duration: 2000
+            });
 
-        this.http.post(url, params, this.api.setHeaders(true)).subscribe(data => {
-            console.log(data);
-        });
+            console.log(url);
+
+            toast.present();
+
+            this.api.http.post(url, params, this.api.setHeaders(true)).subscribe(data => {
+                console.log(data);
+            });
+        }
     }
 
     blockSubmit() {
-        var action;
-        if (this.user.is_in_black_list == true) {
-            this.user.is_in_black_list = false;
-            action = 'delete';
-        } else {
-            this.user.is_in_black_list = true;
-            action = 'create';
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
         }
+        else {
+            var action;
+            if (this.user.is_in_black_list == true) {
+                this.user.is_in_black_list = false;
+                action = 'delete';
+            } else {
+                this.user.is_in_black_list = true;
+                action = 'create';
+            }
 
-        let params = JSON.stringify({
-            list: 'BlackList',
-            action: action
-        });
+            let params = JSON.stringify({
+                list: 'BlackList',
+                action: action
+            });
 
-        var act = this.user.is_in_black_list == 1 ? 1 : 0;
+            var act = this.user.is_in_black_list == 1 ? 1 : 0;
 
-        this.http.post(this.api.url + '/user/managelists/black/' + act + '/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/managelists/black/' + act + '/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
+                let toast = this.toastCtrl.create({
+                    message: data.json().success,
+                    duration: 3000
+                });
+
+                toast.present();
+
+            });
+        }
+    }
+
+    addLike() {
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
+        }
+        else {
+            this.user.isAddLike = true;
             let toast = this.toastCtrl.create({
-                message: data.json().success,
-                duration: 3000
+                message: ' עשית לייק ל' + this.user.nickName,
+                duration: 2000
             });
 
             toast.present();
 
-        });
-    }
+            let params = JSON.stringify({
+                toUser: this.user.userId,
+            });
 
-    addLike(user) {
-        user.isAddLike = true;
-        let toast = this.toastCtrl.create({
-            message: ' עשית לייק ל' + user.nickName,
-            duration: 2000
-        });
-
-        toast.present();
-
-        let params = JSON.stringify({
-            toUser: user.userId,
-        });
-
-        this.http.post(this.api.url + '/user/like/' + user.userId, params, this.api.setHeaders(true)).subscribe(data => {
-            console.log(data);
-        }, err => {
-            console.log("Oops!");
-        });
+            this.api.http.post(this.api.url + '/user/like/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
+                console.log(data);
+            }, err => {
+                console.log("Oops!");
+            });
+        }
     }
 
     fullPagePhotos() {
-        if (this.user.photos[0].url != 'http://www.richdate.co.il/images/users/small/0.jpg') {
-            this.navCtrl.push(FullScreenProfilePage, {
+        //alert(this.user.currentUser == false);
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
+        }
+        else {
+            if (this.user.photos[0].url != 'http://www.richdate.co.il/images/users/small/0.jpg') {
+                this.navCtrl.push(FullScreenProfilePage, {
+                    user: this.user
+                });
+            }
+        }
+    }
+
+    toDialog() {
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
+        }
+        else {
+            this.navCtrl.push(DialogPage, {
                 user: this.user
             });
         }
     }
 
-    toDialog(user) {
-        this.navCtrl.push(DialogPage, {
-            user: user
-        });
-    }
-
     reportAbuseShow() {
-        this.isAbuseOpen = true;
-        this.scrollToBottom();
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
+        }
+        else {
+            this.isAbuseOpen = true;
+            this.scrollToBottom();
+        }
     }
 
     reportAbuseClose() {
-        this.isAbuseOpen = false;
-        this.formReportAbuse.text.value = "";
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
+        }
+        else {
+            this.isAbuseOpen = false;
+            this.formReportAbuse.text.value = "";
+        }
     }
 
     abuseSubmit() {
-
-        let params = JSON.stringify({
-            abuseMessage: this.formReportAbuse.text.value,
-        });
-
-        this.http.post(this.api.url + '/user/abuse/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
-
-            let toast = this.toastCtrl.create({
-                message: 'הודעתך נשלחה בהצלחה להנהלת האתר',
-                duration: 2000
+        if(!this.user.currentUser){
+            this.navCtrl.push(RegisterPage);
+        }
+        else {
+            let params = JSON.stringify({
+                abuseMessage: this.formReportAbuse.text.value,
             });
 
-            toast.present();
-        }, err => {
-            console.log("Oops!");
-        });
-        this.reportAbuseClose();
+            this.api.http.post(this.api.url + '/user/abuse/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
+
+                let toast = this.toastCtrl.create({
+                    message: 'הודעתך נשלחה בהצלחה להנהלת האתר',
+                    duration: 2000
+                });
+
+                toast.present();
+            }, err => {
+                console.log("Oops!");
+            });
+            this.reportAbuseClose();
+        }
     }
 
     ionViewDidLoad() {
@@ -277,12 +283,7 @@ export class ProfilePage {
         $('.back-btn').hide();
     }
 
-    ionViewCanLeave() {
-        console.log('ionViewWillLeave');
-
-    }
-
-        ionViewWillEnter() {
+    ionViewWillEnter() {
         this.api.pageName = 'ProfilePage';
         $('.back-btn').show();
     }

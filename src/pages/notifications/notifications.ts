@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
-import { Http } from '@angular/http';
 import { ApiQuery } from '../../library/api-query';
 import {DialogPage} from "../dialog/dialog";
 import {ArenaPage} from "../arena/arena";
@@ -19,25 +18,23 @@ import {ArenaPage} from "../arena/arena";
 })
 export class NotificationsPage {
 
-  like: string = 'like';
-  tabs: string = this.like;
-  bingo: string = 'bingo';
-  users: Array<{ id: string, date: string, username: string, is_read: string, photo: string, text: string, region_name: string, image: string, about: {}, component: any}>;
-  texts: any;
-  data: any;
+    like: string = 'like';
+    tabs: string = this.like;
+    bingo: string = 'bingo';
+    users: any;
+    texts: any;
+    data: any;
 
- constructor(
-    public navCtrl: NavController,
-    public navParams: NavParams,
-    public api: ApiQuery,
-    public http: Http,
-
+    constructor(
+        public navCtrl: NavController,
+        public navParams: NavParams,
+        public api: ApiQuery
     ) {
         this.getPage();
-  }
+    }
 
     getPage() {
-        this.http.get(this.api.url+'/user/likes/notifications',this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(this.api.url+'/user/likes/notifications',this.api.setHeaders(true)).subscribe(data => {
 
             this.users = data.json().likesNotifications.items;
             //console.log('USERS: ' + JSON.stringify(this.users));
@@ -50,36 +47,36 @@ export class NotificationsPage {
         });
     }
 
-  toDialog(user) {
-    let user_id = user.userId;
-    let bingo = user.bingo;
-    this.http.post(this.api.url+'/user/notification/'+user.id+'/read',{},this.api.setHeaders(true)).subscribe(data => {
+    toDialog(user) {
+        let user_id = user.userId;
+        let bingo = user.bingo;
+        this.api.http.post(this.api.url+'/user/notification/'+user.id+'/read',{},this.api.setHeaders(true)).subscribe(data => {
 
-        this.getPage();
+            this.getPage();
 
-        this.users = data.json().users;
+            this.users = data.json().users;
 
-        if( bingo == 1) {
-            this.navCtrl.push(DialogPage, {
-                user: {'id': user_id }
-            });
-        }else {
-            this.navCtrl.push(ArenaPage, {
-                user: user_id
-            });
-        }
-    },err => {
-        console.log("Oops!");
-    });
+            if( bingo == 1) {
+                this.navCtrl.push(DialogPage, {
+                    user: {'id': user_id }
+                });
+            }else {
+                this.navCtrl.push(ArenaPage, {
+                    user: user_id
+                });
+            }
+        },err => {
+            console.log("Oops!");
+        });
 
-}
+    }
 
-ionViewDidLoad() {
-  console.log('ionViewDidLoad NotificationsPage');
-}
+    ionViewDidLoad() {
+        console.log('ionViewDidLoad NotificationsPage');
+    }
 
-  ionViewWillEnter() {
-      this.api.pageName = 'NotificationsPage';
-  }
+    ionViewWillEnter() {
+        this.api.pageName = 'NotificationsPage';
+    }
 
 }

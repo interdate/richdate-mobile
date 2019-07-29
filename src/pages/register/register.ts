@@ -2,7 +2,6 @@ import {Component, ViewChild} from "@angular/core";
 import {ActionSheetController, Content, NavController, NavParams, Platform} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
 import * as $ from "jquery";
-import {Http} from "@angular/http";
 import {HomePage} from "../home/home";
 import {Page} from "../page/page";
 import {SelectPage} from "../select/select";
@@ -24,7 +23,6 @@ export class RegisterPage {
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
                 public api: ApiQuery,
-                public http: Http,
                 public platform: Platform,
                 public actionSheetCtrl: ActionSheetController) {
         api.storage.get('status').then((val) => {
@@ -56,7 +54,7 @@ export class RegisterPage {
         //}
 
 
-        this.http.post(this.api.url + '/user/register', this.user, header).subscribe(
+        this.api.http.post(this.api.url + '/user/register', this.user, header).subscribe(
             data => {
 
                 //this.form = {};

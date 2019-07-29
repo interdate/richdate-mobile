@@ -1,6 +1,5 @@
 import {Component} from "@angular/core";
 import {IonicPage, NavController, NavParams} from "ionic-angular";
-import {Http} from "@angular/http";
 import {ApiQuery} from "../../library/api-query";
 
 /**
@@ -10,7 +9,7 @@ import {ApiQuery} from "../../library/api-query";
  * Ionic pages and navigation.
  */
 
-declare var $: any;
+import * as $ from "jquery";
 
 @IonicPage()
 @Component({
@@ -23,7 +22,7 @@ export class AdminMessagesPage {
 
     user: any;
 
-    constructor(public navCtrl: NavController, public api: ApiQuery, public navParams: NavParams, public http: Http) {
+    constructor(public navCtrl: NavController, public api: ApiQuery, public navParams: NavParams) {
 
         this.user = navParams.get('user');
 
@@ -51,7 +50,7 @@ export class AdminMessagesPage {
     }
 
     getPage() {
-        this.http.get(this.api.url + '/user/admin-messages', this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/admin-messages', this.api.setHeaders(true)).subscribe(data => {
             this.messages = data.json().messages;
         }, err => {
             console.log("Oops!");
@@ -59,7 +58,7 @@ export class AdminMessagesPage {
     }
 
     setMessagesAsRead(){
-        this.http.post(this.api.url + '/user/admin-messages-as-read', {}, this.api.header).subscribe(data => {});
+        this.api.http.post(this.api.url + '/user/admin-messages-as-read', {}, this.api.header).subscribe(data => {});
     }
 
 }

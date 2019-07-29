@@ -1,7 +1,6 @@
 import {Component} from '@angular/core';
 import {IonicPage, NavController, NavParams, ToastController} from 'ionic-angular';
 import {ApiQuery} from '../../library/api-query';
-import {Http} from '@angular/http';
 
 /**
  * Generated class for the PasswordRecoveryPage page.
@@ -23,11 +22,10 @@ export class PasswordRecoveryPage {
 
     constructor(public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public api: ApiQuery,
                 public toastCtrl: ToastController) {
 
-        /*this.http.get(api.url + '/user/password', api.header).subscribe(data => {
+        /*this.api.http.get(api.url + '/user/password', api.header).subscribe(data => {
             this.form = data.json();
         }, err => {
             console.log("Oops!");
@@ -37,7 +35,7 @@ export class PasswordRecoveryPage {
 
     formSubmit() {
         if( this.form.form.email.value != "") {
-            this.http.get(this.api.url + '/recovery/' + this.form.form.email.value, this.api.header).subscribe(data => this.validate(data.json()));
+            this.api.http.get(this.api.url + '/recovery/' + this.form.form.email.value, this.api.header).subscribe(data => this.validate(data.json()));
         }else{
             this.email_err = "כתובת האימייל שהזנת לא נמצאה במערכת";
         }

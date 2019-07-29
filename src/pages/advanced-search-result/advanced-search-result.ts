@@ -1,7 +1,5 @@
 import {Component} from "@angular/core";
-import {Http} from "@angular/http";
-import {Storage} from "@ionic/storage";
-import {NavController, NavParams, LoadingController, ToastController, Events} from "ionic-angular";
+import {NavController, NavParams, ToastController, Events} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
 import {ProfilePage} from "../profile/profile";
 import {DialogPage} from "../dialog/dialog";
@@ -32,33 +30,29 @@ export class AdvancedSearchResultPage {
     get_params: { page: any, count: any, advanced_search: any} = {page: 1, count: 10, advanced_search: {}};
     url: any = false;
     form_filter: any;
-    users: Array<{ id: string, distance: string, city: string, isPaying: string, isOnline: string, isAddBlackListed: string, nickName: string,
-        mainImage: { url: any }, age: string, region_name: string, image: string, about: {}, component: any}>;
+    users: any;
     params: any = {action: 'online', page: 1, list: ''};
     selectOptions = {title: 'popover select'};
 
 
     constructor(public toastCtrl: ToastController,
-                public loadingCtrl: LoadingController,
                 public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public api: ApiQuery,
-                public events: Events,
-                public storage: Storage) {
+                public events: Events) {
 
         this.get_params = this.navParams.get('params');
         this.get_params = JSON.parse(String(this.get_params));
 
         this.page_counter = 1;
 
-        this.storage.get('username').then((username) => {
+        this.api.storage.get('username').then((username) => {
             this.username = username;
             this.getUsers();
         });
 
 
-        this.storage.get('password').then((password) => {
+        this.api.storage.get('password').then((password) => {
             this.password = password;
         });
 
@@ -67,7 +61,8 @@ export class AdvancedSearchResultPage {
     itemTapped(user) {
 
         this.navCtrl.push(ProfilePage, {
-            user: user
+            user: user,
+            id: user.id
         });
     }
 
@@ -83,9 +78,9 @@ export class AdvancedSearchResultPage {
 
     addLike(user) {
 
-        if (user.isAddLike == false) {
-
-            user.isAddLike = true;
+        if (user.isLike == '0') {
+            this.users[this.users.indexOf(user)].isLike = '1';
+            user.isLike = '1';
 
             let toast = this.toastCtrl.create({
                 message: 'You liked user',
@@ -97,28 +92,22 @@ export class AdvancedSearchResultPage {
             let params = JSON.stringify({
                 toUser: user.id,
             });
-            this.http.post(this.api.url + '/user/like/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/like/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
             });
         }
     }
 
     block(user, bool) {
 
-        var url;
-
-        if (bool == true) {
-            user.isBlackListed = true;
-
-            url = this.api.url + '/user/favorites/' + user.id + '/delete';
-        }
+        let url, message;
 
         if (bool == false) {
-
-            user.isBlackListed = false;
+            //this.users[this.users.indexOf(user)].isBlackListed = '0';
+            //user.isBlackListed = '0';
 
             url = this.api.url + '/user/blacklist/' + user.id + '/delete';
 
-            var message = 'The user has been removed from your black list';
+            message = 'The user has been removed from your black list';
 
         }
 
@@ -126,60 +115,45 @@ export class AdvancedSearchResultPage {
         this.users.splice(this.users.indexOf(user), 1);
         this.events.publish('statistics:updated');
 
-        this.http.post(url, {}, this.api.setHeaders(true)).subscribe(data => {
-            let toast = this.toastCtrl.create({
-                message: message,
-                duration: 2000
-            });
-            toast.present();
+        this.api.http.post(url, {}, this.api.setHeaders(true)).subscribe(data => {
+            if(message) {
+                let toast = this.toastCtrl.create({
+                    message: message,
+                    duration: 2000
+                });
+                toast.present();
+            }
         });
     }
 
-/*    addFavorites(user) {
-
-        if (user.isAddFavorite == false) {
-
-            user.isAddFavorite = true;
-
-            let toast = this.toastCtrl.create({
-                message: 'The user has been added to Favorites',
-                duration: 2000
-            });
-
-            toast.present();
-
-            let params = JSON.stringify({
-                list: 'Favorite'
-            });
-
-            this.http.post(this.api.url + '/user/favorites/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
-                this.events.publish('statistics:updated');
-            });
-        }
-    }*/
-
     addFavorites(user) {
-
-        if (user.isFav == false) {
-            user.isFav = true;
+        let params, url;
+        let index = this.users.indexOf(user);
+        if (this.params.list == 'fav') {
+            this.users.splice(index, 1);
+        }
+        if (user.isFav == '0') {
+            this.users[index].isFav = '1';
+            user.isFav = '1';
 
             params = JSON.stringify({
                 list: 'Favorite'
             });
 
-            var url = this.api.url + '/user/managelists/favi/1/' + user.id;
+            url = this.api.url + '/user/managelists/favi/1/' + user.id;
 
         } else {
-            user.isFav = false;
+            this.users[index].isFav = '0';
+            user.isFav = '0';
 
-            var params = JSON.stringify({
+            params = JSON.stringify({
                 list: 'Unfavorite'
             });
 
-            var url = this.api.url + '/user/managelists/favi/0/' + user.id;
+            url = this.api.url + '/user/managelists/favi/0/' + user.id;
         }
 
-        this.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
             let toast = this.toastCtrl.create({
                 message: data.json().success,
                 duration: 3000
@@ -273,7 +247,7 @@ export class AdvancedSearchResultPage {
 
         this.url = '/user/advanced/search';
 
-        this.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe(data => {
             this.users = data.json().users;
             this.texts = data.json().texts;
             this.form_filter = data.json().filters;
@@ -298,7 +272,7 @@ export class AdvancedSearchResultPage {
             this.url = '/user/advanced/search';
             if(this.loadMoreResults) {
                 this.loadMoreResults = false;
-                this.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe(data => {
                     this.loadMoreResults = true;
                     if (data.json().users.length < this.api.resultsPerPage) {
                         this.loader = false;

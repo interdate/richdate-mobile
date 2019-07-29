@@ -386,5 +386,18 @@ ion-popover {
   top: 38px;
 }
 
-
-
+.avatar.private{
+  position: relative;
+}
+.avatar.private::after{
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  right: 0px;
+  background-image: url("../assets/img/privet.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 95px;
+}

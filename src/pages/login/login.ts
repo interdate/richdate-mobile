@@ -2,8 +2,7 @@ import {Component} from "@angular/core";
 import {IonicPage, NavController, NavParams, ToastController} from "ionic-angular";
 import {HomePage} from "../home/home";
 import {ApiQuery} from "../../library/api-query";
-import {Storage} from "@ionic/storage";
-import {Http, Headers, RequestOptions, Response} from "@angular/http";
+import {Headers, RequestOptions, Response} from "@angular/http";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import {RegisterPage} from "../register/register";
@@ -37,21 +36,18 @@ export class LoginPage {
 
   constructor(public navCtrl: NavController,
               public navParams: NavParams,
-              public http: Http,
               public api: ApiQuery,
-              public storage: Storage,
               public toastCtrl: ToastController
   ) {
 
-    this.http.get(api.url + '/user/form/login', api.setHeaders(false)).subscribe(data => {
+    this.api.http.get(api.url + '/user/form/login', api.setHeaders(false)).subscribe(data => {
       this.form = data.json();
-      this.storage.get('username').then((username) => {
+      this.api.storage.get('username').then((username) => {
         this.form.login.username.value = username;
         this.user.name = username;
       });
     });
 
-    this.storage = storage;
 
     if (navParams.get('page') && navParams.get('page')._id == "logout") {
 
@@ -60,10 +56,10 @@ export class LoginPage {
       this.api.username = null;
       this.api.password = null;
       this.api.status = '';
-      this.storage.remove('status');
-      this.storage.remove('password');
-      this.storage.remove('user_id');
-      this.storage.remove('user_photo');
+      this.api.storage.remove('status');
+      this.api.storage.remove('password');
+      this.api.storage.remove('user_id');
+      this.api.storage.remove('user_photo');
     }
 
     if (navParams.get('error')) {
@@ -84,7 +80,7 @@ export class LoginPage {
       password = "nopassword";
     }
 
-    this.http.post(this.api.url + '/user/login/', '', this.setHeaders()).map((res: Response) => res.json()).subscribe(data => { //.map((res: Response) => res.json())
+    this.api.http.post(this.api.url + '/user/login/', '', this.setHeaders()).map((res: Response) => res.json()).subscribe(data => { //.map((res: Response) => res.json())
 
       setTimeout(function () {
         this.errors = 'משתמש זה נחסם על ידי הנהלת האתר';
@@ -115,11 +111,11 @@ export class LoginPage {
   validate(response) {
 
     if (response.status != "not_activated") {
-      this.storage.set('username', this.form.login.username.value);
-      this.storage.set('password', this.form.login.password.value);
-      this.storage.set('status', response.status);
-      this.storage.set('user_id', response.id);
-      this.storage.set('user_photo', response.photo);
+      this.api.storage.set('username', this.form.login.username.value);
+      this.api.storage.set('password', this.form.login.password.value);
+      this.api.storage.set('status', response.status);
+      this.api.storage.set('user_id', response.id);
+      this.api.storage.set('user_photo', response.photo);
 
       this.api.setHeaders(true, this.form.login.username.value, this.form.login.password.value);
 
@@ -127,13 +123,13 @@ export class LoginPage {
 
     }
     if (response.status) {
-      let data = {
-        status: 'init',
-        username: this.form.login.username.value,
-        password: this.form.login.password.value
-      };
+      // let data = {
+      //   status: 'init',
+      //   username: this.form.login.username.value,
+      //   password: this.form.login.password.value
+      // };
 
-      this.storage.set('user_photo', response.photo);
+      this.api.storage.set('user_photo', response.photo);
       if (response.status == "notActivated") {
         this.navCtrl.push(ActivationPage);
       } else if (response.status == "noimg") {
@@ -168,7 +164,7 @@ export class LoginPage {
         password: this.form.login.password.value
       });
     }
-    this.storage.get('deviceToken').then((deviceToken) => {
+    this.api.storage.get('deviceToken').then((deviceToken) => {
       this.api.sendPhoneId(deviceToken);
     });
   }

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import {ApiQuery} from '../../library/api-query';
-import {Http} from '@angular/http';
 
 /**
  * Generated class for the TermsPage page.
@@ -21,12 +20,11 @@ export class TermsPage {
   
       constructor(public navCtrl: NavController,
                   public navParams: NavParams,
-                  public http: Http,
                   public api: ApiQuery) {
   
           let id = navParams.get('id');
   
-          this.http.get(api.url + id, this.api.setHeaders(false)).subscribe(data => {
+          this.api.http.get(api.url + id, this.api.setHeaders(false)).subscribe(data => {
               this.page = data.json().page;
               console.log(this.page.title);
   

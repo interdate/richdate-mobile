@@ -11,11 +11,9 @@ import {
 } from "ionic-angular";
 import {Market} from "@ionic-native/market";
 import {Push, PushObject, PushOptions} from "@ionic-native/push";
-import {Http} from "@angular/http";
 import {StatusBar} from "@ionic-native/status-bar";
 import {SplashScreen} from "@ionic-native/splash-screen";
 import {ApiQuery} from "../library/api-query";
-import {Storage} from "@ionic/storage";
 import {HomePage} from "../pages/home/home";
 import {LoginPage} from "../pages/login/login";
 import {RegisterPage} from "../pages/register/register";
@@ -36,11 +34,10 @@ import {BingoPage} from "../pages/bingo/bingo";
 import {FirebaseMessagingProvider} from "../providers/firebase-messaging";
 
 
-declare var $: any;
+import * as $ from "jquery";
 
 @Component({
-    templateUrl: 'app.html',
-    providers: [Market, Push]
+    templateUrl: 'app.html'
 
 })
 export class MyApp {
@@ -79,10 +76,8 @@ export class MyApp {
     constructor(public platform: Platform,
                 public menu: MenuController,
                 public splashScreen: SplashScreen,
-                public http: Http,
                 public statusBar: StatusBar,
                 public api: ApiQuery,
-                public storage: Storage,
                 public toastCtrl: ToastController,
                 public alertCtrl: AlertController,
                 public events: Events,
@@ -95,31 +90,33 @@ export class MyApp {
 // set status bar to white
         //this.statusBar.styleBlackTranslucent();
 
-        this.http.get(api.url + '/user/menu/', api.header).subscribe(data => {
+        this.api.http.get(api.url + '/user/menu/', api.header).subscribe(data => {
 
 
             let menu = data.json().menu;
             this.api.resultsPerPage = data.json().resultsPerPage;
             this.initMenuItems(menu);
+            //console.log('page: ' + this.api.pageName);
+            if(this.api.pageName != 'ProfilePage') {
+                this.api.storage.get('user_id').then((val) => {
 
-            this.storage.get('user_id').then((val) => {
+                    this.initPushNotification();
 
-                this.initPushNotification();
-
-                if (!val) {
-                    this.rootPage = LoginPage;
-                    this.menu_items = this.menu_items_logout;
-                } else {
-                    this.menu_items = this.menu_items_login;
-                    this.getBingo();
-                    this.rootPage = HomePage;
-                    let that = this;
-                    setTimeout(function () {
-                        that.api.sendBrowserPhoneId();
-                    }, 10000);
-                    //this.rootPage = HomePage;
-                }
-            });
+                    if (!val) {
+                        this.rootPage = LoginPage;
+                        this.menu_items = this.menu_items_logout;
+                    } else {
+                        this.menu_items = this.menu_items_login;
+                        this.getBingo();
+                        this.rootPage = HomePage;
+                        let that = this;
+                        setTimeout(function () {
+                            that.api.sendBrowserPhoneId();
+                        }, 10000);
+                        //this.rootPage = HomePage;
+                    }
+                });
+            }
         });
 
         this.closeMsg();
@@ -151,7 +148,7 @@ export class MyApp {
 
     getStatistics() {
 
-        this.storage.get('user_id').then((id) => {
+        this.api.storage.get('user_id').then((id) => {
             if (id) {
 
                 //let page = this.nav.getActive();
@@ -160,7 +157,7 @@ export class MyApp {
                     headers = this.api.setHeaders(true, false, false, '1');
                 }
 
-                this.http.get(this.api.url + '/user/statistics/', this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.get(this.api.url + '/user/statistics/', headers).subscribe(data => {
 
                     let statistics = data.json().statistics;
 
@@ -169,29 +166,29 @@ export class MyApp {
                     this.api.status = this.status;
 
                     this.menu_items_login.push();
-
-                    this.menu_items[2].count = statistics.newNotificationsNumber;
-                    this.menu_items[0].count = statistics.newMessagesNumber;
-                    // Contacts Sidebar Menu
-                    this.menu_items_contacts[0].count = statistics.looked;//viewed
-                    this.menu_items_contacts[1].count = statistics.lookedme;//viewedMe
-                    this.menu_items_contacts[2].count = statistics.contacted;//connected
-                    this.menu_items_contacts[3].count = statistics.contactedme;//connectedMe
-                    this.menu_items_contacts[4].count = statistics.fav;//favorited
-                    this.menu_items_contacts[5].count = statistics.favedme;//favoritedMe
-                    this.menu_items_contacts[6].count = statistics.black;//blacklisted
-                    //Footer Menu
-                    this.menu_items_footer2[2].count = statistics.newNotificationsNumber;
-                    //this.menu_items_footer2[2].count = 0;
-                    this.menu_items_footer1[3].count = statistics.newMessagesNumber;
-                    this.menu_items_footer2[0].count = statistics.fav;//favorited
-                    this.menu_items_footer2[1].count = statistics.favedme;//favoritedMe
-
+                    if (typeof statistics != 'undefined') {
+                        this.menu_items[2].count = statistics.newNotificationsNumber;
+                        this.menu_items[0].count = statistics.newMessagesNumber;
+                        // Contacts Sidebar Menu
+                        this.menu_items_contacts[0].count = statistics.looked;//viewed
+                        this.menu_items_contacts[1].count = statistics.lookedme;//viewedMe
+                        this.menu_items_contacts[2].count = statistics.contacted;//connected
+                        this.menu_items_contacts[3].count = statistics.contactedme;//connectedMe
+                        this.menu_items_contacts[4].count = statistics.fav;//favorited
+                        this.menu_items_contacts[5].count = statistics.favedme;//favoritedMe
+                        this.menu_items_contacts[6].count = statistics.black;//blacklisted
+                        //Footer Menu
+                        this.menu_items_footer2[2].count = statistics.newNotificationsNumber;
+                        //this.menu_items_footer2[2].count = 0;
+                        this.menu_items_footer1[3].count = statistics.newMessagesNumber;
+                        this.menu_items_footer2[0].count = statistics.fav;//favorited
+                        this.menu_items_footer2[1].count = statistics.favedme;//favoritedMe
+                    }
                     this.is2D = data.json().is2D;
-                    this.isPay = data.json().isPay;
+                    this.api.isPay = data.json().isPay;
 
                     if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'ContactUsPage'
-                        && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.isPay == 0) {
+                        && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.api.isPay == 0) {
                         this.nav.setRoot(SubscriptionPage);
                     } else if (this.api.pageName != 'ChangePhotosPage' && this.status === 'noimg') {
                         let toast = this.toastCtrl.create({
@@ -216,7 +213,7 @@ export class MyApp {
                         this.nav.setRoot(HomePage);
                     }
 
-                    if ((this.api.pageName == 'SubscriptionPage' && this.isPay == 1)) {
+                    if ((this.api.pageName == 'SubscriptionPage' && this.api.isPay == 1)) {
                         this.nav.setRoot(HomePage);
                     }
 
@@ -231,10 +228,10 @@ export class MyApp {
 
                         this.api.setHeaders(false, null, null);
                         // Removing data storage
-                        this.storage.remove('status');
-                        this.storage.remove('password');
-                        this.storage.remove('user_id');
-                        this.storage.remove('user_photo');
+                        this.api.storage.remove('status');
+                        this.api.storage.remove('password');
+                        this.api.storage.remove('user_id');
+                        this.api.storage.remove('user_photo');
                         this.nav.setRoot(LoginPage, {error: err['_body']});
                         this.nav.popToRoot();
                     }
@@ -251,10 +248,10 @@ export class MyApp {
     clearLocalStorage() {
         this.api.setHeaders(false, null, null);
         // Removing data storage
-        this.storage.remove('status');
-        this.storage.remove('password');
-        this.storage.remove('user_id');
-        this.storage.remove('user_photo');
+        this.api.storage.remove('status');
+        this.api.storage.remove('password');
+        this.api.storage.remove('user_id');
+        this.api.storage.remove('user_photo');
 
         this.nav.push(LoginPage);
     }
@@ -303,7 +300,7 @@ export class MyApp {
         this.menu_items_settings = [
             {_id: 'edit_profile', icon: '', title: menu.edit_profile, component: RegisterPage, count: ''},
             {_id: 'edit_photos', icon: '', title: menu.edit_photos, component: ChangePhotosPage, count: ''},
-            {_id: '', icon: 'person', title: menu.view_my_profile, component: ProfilePage, count: ''},
+            {_id: 'my_profile', icon: 'person', title: menu.view_my_profile, component: ProfilePage, count: ''},
             {_id: 'change_password', icon: '', title: menu.change_password, component: ChangePasswordPage, count: ''},
             {_id: 'freeze_account', icon: '', title: menu.freeze_account, component: FreezeAccountPage, count: ''},
             {_id: 'settings', icon: '', title: menu.settings, component: SettingsPage, count: ''},
@@ -514,7 +511,7 @@ export class MyApp {
 
         push2.on('registration').subscribe((data) => {
             //this.deviceToken = data.registrationId;
-            this.storage.set('deviceToken', data.registrationId);
+            this.api.storage.set('deviceToken', data.registrationId);
             this.api.sendPhoneId(data.registrationId);
             //TODO - send device token to server
         });
@@ -523,7 +520,7 @@ export class MyApp {
             //let self = this;
             //if user using app and push notification comes
             if (data.additionalData.foreground == false) {
-                this.storage.get('user_id').then((val) => {
+                this.api.storage.get('user_id').then((val) => {
                     if (val) {
                         this.nav.push(InboxPage);
                     } else {
@@ -558,7 +555,7 @@ export class MyApp {
     }
 
     getBanner() {
-        this.http.get(this.api.url + '/user/banner', this.api.header).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/banner', this.api.header).subscribe(data => {
             this.banner = data.json();
         });
     }
@@ -613,6 +610,10 @@ export class MyApp {
             if (page._id == 'edit_profile') {
                 let params = {user: {step: 0, register: false}};
                 this.nav.push(RegisterPage, params);
+            }else if(page._id == 'my_profile') {
+                this.nav.push(page.component, {id: 0});
+            }else if(page._id == 'inbox'){
+                this.nav.push(page.component);
             } else {
                 this.nav.push(page.component, {page: page, action: 'list', params: params});
             }
@@ -620,23 +621,27 @@ export class MyApp {
     }
 
     homePage() {
-        this.storage.get('user_id').then((val) => {
+        let page;
+        this.api.storage.get('user_id').then((val) => {
             if (val) {
-                this.nav.setRoot(HomePage);
+                page = HomePage;
             } else {
-                this.nav.setRoot(LoginPage);
+                page = LoginPage;
             }
+            this.nav.setRoot(page);
             this.nav.popToRoot();
+            this.nav.push(page);
         });
     }
 
     getBingo() {
-        this.storage.get('user_id').then((val) => {
+        this.api.storage.get('user_id').then((val) => {
             if (val && this.api.password) {
-                this.http.get(this.api.url + '/user/bingo', this.api.setHeaders(true)).subscribe(data => {
-                    //this.storage.set('status', this.status);
+                this.api.http.get(this.api.url + '/user/bingo', this.api.setHeaders(true)).subscribe(data => {
+                    //this.api.storage.set('status', this.status);
                     this.texts = data.json().texts;
                     this.avatar = data.json().texts.avatar;
+                    this.api.myPhotos = data.json().photos;
                     // DO NOT DELETE
                     /*if (this.status != data.json().status) {
                      this.status = data.json().status;
@@ -649,7 +654,7 @@ export class MyApp {
                             bingo: data.json().texts.items[0]
                         });
                         this.nav.push(BingoPage, {data: data.json()});
-                        this.http.post(this.api.url + '/user/bingo/splashed', params, this.api.setHeaders(true)).subscribe(data => {
+                        this.api.http.post(this.api.url + '/user/bingo/splashed', params, this.api.setHeaders(true)).subscribe(data => {
                         });
                     }
                 });
@@ -666,12 +671,12 @@ export class MyApp {
     getMessage() {
         //let page = this.nav.getActive();
         /*
-         this.http.get(this.api.url + '/user/new/messages', this.api.setHeaders(true)).subscribe(data => {
+         this.api.http.get(this.api.url + '/user/new/messages', this.api.setHeaders(true)).subscribe(data => {
 
          if ((this.new_message == '' || typeof this.new_message == 'undefined') && !(this.api.pageName == 'DialogPage')) {
          this.new_message = data.json().messages[0];
          if (typeof this.new_message == 'object') {
-         this.http.get(this.api.url + '/user/messages/notify/' + this.new_message.id, this.api.setHeaders(true)).subscribe(data => {
+         this.api.http.get(this.api.url + '/user/messages/notify/' + this.new_message.id, this.api.setHeaders(true)).subscribe(data => {
          });
          }
          }
@@ -764,7 +769,7 @@ export class MyApp {
             }
 
             if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'ContactUsPage'
-                && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.isPay == 0 && this.status == 1) {
+                && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.api.isPay == 0 && this.api.status == 1) {
                 this.nav.setRoot(SubscriptionPage);
             } else if (this.api.pageName != 'ChangePhotosPage' && this.status === 'noimg') {
 
@@ -862,7 +867,7 @@ export class MyApp {
             }
             this.api.setHeaders(true);
 
-            this.storage.get('status').then((val) => {
+            this.api.storage.get('status').then((val) => {
                 if (this.status == '') {
                     this.status = val;
                 }

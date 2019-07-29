@@ -1,7 +1,6 @@
 import { Component, ViewChild, Injectable } from '@angular/core';
-import { IonicPage, NavController, NavParams, Slides, ToastController, LoadingController, Events } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, Slides, ToastController, Events } from 'ionic-angular';
 import {ApiQuery} from '../../library/api-query';
-import {Http} from '@angular/http';
 import {ChangePhotosPage} from "../change-photos/change-photos";
 import {ProfilePage} from "../profile/profile";
 import {DialogPage} from "../dialog/dialog";
@@ -33,18 +32,11 @@ export class ArenaPage {
     constructor(public navCtrl: NavController,
                 public toastCtrl: ToastController,
                 public navParams: NavParams,
-                public http: Http,
-                public loadingCtrl: LoadingController,
                 public events: Events,
                 public api: ApiQuery) {
 
         let user_id = 0;
-
-        let loading = this.loadingCtrl.create({
-            content: 'אנא המתן...'
-        });
-
-        loading.present();
+        this.api.showLoad();
 
         if (navParams.get('user')) {
             user_id = navParams.get('user');
@@ -55,8 +47,8 @@ export class ArenaPage {
          user_id: user_id
          });*/
 
-        this.http.get(api.url + '/users/forLikes/'+user_id+'/0', api.setHeaders(true)).subscribe(data => {
-            loading.dismiss();
+        this.api.http.get(api.url + '/users/forLikes/'+user_id+'/0', api.setHeaders(true)).subscribe(data => {
+            this.api.hideLoad();
             this.users = data.json().users.items;
             this.texts = data.json().texts;
 
@@ -94,7 +86,7 @@ export class ArenaPage {
                 toUser: user.id,
             });
 
-            this.http.post(this.api.url + '/user/like/' + user.id, params, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/like/' + user.id, params, this.api.setHeaders(true)).subscribe(data => {
 
             });
 
@@ -135,7 +127,8 @@ export class ArenaPage {
     toProfile() {
         let user = this.users[this.slides.getActiveIndex()];
         this.navCtrl.push(ProfilePage, {
-            user: user
+            user: user,
+            id: user.id
         });
     }
 

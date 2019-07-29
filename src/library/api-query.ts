@@ -17,6 +17,7 @@ export class ApiQuery {
 
   public url: any;
   public header: RequestOptions;
+  public header1: any;
   public response: any;
   public username: any;
   public password: any;
@@ -28,31 +29,35 @@ export class ApiQuery {
   public loading: any;
   public resultsPerPage: any = 20;
   public signupData: { username: any, password: any };
+  public isPay: any;
+  public myPhotos: any;
 
-  constructor(public storage: Storage,
-              public alertCtrl: AlertController,
-              public http: Http,
-              public http2: HttpClient,
-              public loadingCtrl: LoadingController,
-              private sanitizer: DomSanitizer,
-              public modalCtrl: ModalController,
-              public toastCtrl: ToastController,
-              private geolocation: Geolocation,
-              public keyboard: Keyboard,
-              public iab: InAppBrowser,
-              public plt: Platform) {
+  constructor(
+      public storage: Storage,
+      public alertCtrl: AlertController,
+      public http: Http,
+      public http1: HttpClient,
+      public loadingCtrl: LoadingController,
+      private sanitizer: DomSanitizer,
+      public modalCtrl: ModalController,
+      public toastCtrl: ToastController,
+      private geolocation: Geolocation,
+      public keyboard: Keyboard,
+      public iab: InAppBrowser,
+      public plt: Platform
+  ) {
    // this.url = 'http://10.0.0.12:8100';
-    //this.url = 'http://localhost:8100';
-    this.url = 'https://m.richdate.co.il/api/v8/index.php';
+      //this.url = 'http://localhost:8102';
+      this.url = '/api/v9';
 
-    this.storage.get('user_id').then((val) => {
-      this.storage.get('username').then((username) => {
-        this.username = username;
+      this.storage.get('user_id').then((val) => {
+          this.storage.get('username').then((username) => {
+            this.username = username;
+          });
+          this.storage.get('password').then((password) => {
+            this.password = password;
+          });
       });
-      this.storage.get('password').then((password) => {
-        this.password = password;
-      });
-    });
   }
 
 
@@ -80,6 +85,10 @@ export class ApiQuery {
     toast.present();
   }
 
+  preview(navCtrl, url){
+    navCtrl.push('FullScreenProfilePage',{user: {userId:0,photos:[{url:url}]}});
+  }
+
   safeHtml(html) {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
@@ -101,7 +110,7 @@ export class ApiQuery {
   setLocation() {
 
     this.geolocation.getCurrentPosition().then((pos) => {
-      var params = JSON.stringify({
+      let params = JSON.stringify({
         latitude: '' + pos.coords.latitude + '',
         longitude: '' + pos.coords.longitude + ''
       });
@@ -161,11 +170,11 @@ export class ApiQuery {
   setHeaders(is_auth = false, username = false, password = false, register = "0") {
 
 
-    if (username != false) {
+    if (username !== false) {
       this.username = username;
     }
 
-    if (password != false) {
+    if (password !== false) {
       this.password = password;
     }
 
@@ -184,6 +193,31 @@ export class ApiQuery {
       headers: myHeaders
     });
     return this.header;
+  }
+
+  setHeaders1(is_auth = false, username = false, password = false) {
+
+    if (username !== false) {
+      this.username = username;
+    }
+
+    if (password !== false) {
+      this.password = password;
+    }
+
+    let myHeaders = new HttpHeaders();
+
+    myHeaders = myHeaders.append('Content-type', 'application/json');
+    myHeaders = myHeaders.append('Accept', '*/*');
+    myHeaders = myHeaders.append('Access-Control-Allow-Origin', '*');
+
+    if (is_auth == true) {
+      myHeaders = myHeaders.append("Authorization", "Basic " + btoa(encodeURIComponent(this.username) + ':' + encodeURIComponent(this.password)));
+    }
+    this.header1 = {
+      headers: myHeaders
+    };
+    return this.header1;
   }
 
   ngAfterViewInit() {

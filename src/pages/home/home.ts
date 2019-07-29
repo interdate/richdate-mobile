@@ -1,13 +1,11 @@
 import {Component, ViewChild} from "@angular/core";
-import {NavController, NavParams, LoadingController, ToastController, Events, InfiniteScroll} from "ionic-angular";
-import {Http} from "@angular/http";
-import {Storage} from "@ionic/storage";
+import {NavController, NavParams, ToastController, Events, InfiniteScroll} from "ionic-angular";
 import {ApiQuery} from "../../library/api-query";
 import {ProfilePage} from "../profile/profile";
 import {LoginPage} from "../login/login";
 import {DialogPage} from "../dialog/dialog";
 
-declare var $: any;
+import * as $ from "jquery";
 
 @Component({
     selector: 'page-home',
@@ -45,13 +43,10 @@ export class HomePage {
     selectOptions = {title: 'popover select'};
 
     constructor(public toastCtrl: ToastController,
-                public loadingCtrl: LoadingController,
                 public navCtrl: NavController,
                 public navParams: NavParams,
-                public http: Http,
                 public api: ApiQuery,
-                public events: Events,
-                public storage: Storage) {
+                public events: Events) {
 
         if (navParams.get('params') && navParams.get('params') != 'login') {
 
@@ -82,8 +77,8 @@ export class HomePage {
 
         this.page_counter = 1;
 
-        this.storage.get('username').then((username) => {
-            this.storage.get('password').then((password) => {
+        this.api.storage.get('username').then((username) => {
+            this.api.storage.get('password').then((password) => {
                 this.password = password;
                 this.username = username;
                 this.getUsers();
@@ -96,7 +91,7 @@ export class HomePage {
     itemTapped(user) {
         this.navCtrl.push(ProfilePage, {
             user: user,
-            userId: user.id
+            id: user.id
         });
     }
 
@@ -120,9 +115,9 @@ export class HomePage {
 
         //console.log('USER: ' + JSON.stringify(user.userNick));
 
-        if (user.isLike == false) {
-
-            user.isLike = true;
+        if (user.isLike == '0') {
+            this.users[this.users.indexOf(user)].isLike = '1';
+            user.isLike = '1';
 
             let toast = this.toastCtrl.create({
                 message: ' עשית לייק ל' + user.nickName,
@@ -135,7 +130,7 @@ export class HomePage {
                 toUser: user.id,
             });
 
-            this.http.post(this.api.url + '/user/like/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/like/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
             }, err => {
                 console.log("Oops!");
             });
@@ -147,18 +142,7 @@ export class HomePage {
         let toast;
         let params;
 
-        if (user.isAddBlackListed == false && bool == true) {
-
-            user.isAddBlackListed = true;
-
-            params = JSON.stringify({
-                list: 'Favorite',
-                action: 'delete'
-            });
-
-        } else if (user.isAddBlackListed == true && bool == false) {
-
-            user.isAddBlackListed = false;
+        if (bool == false) {
 
             params = JSON.stringify({
                 list: 'BlackList',
@@ -175,7 +159,7 @@ export class HomePage {
         this.events.publish('statistics:updated');
 
 
-        this.http.post(this.api.url + '/user/managelists/black/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/managelists/black/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
 
             toast = this.toastCtrl.create({
                 message: data.json().success,
@@ -191,7 +175,7 @@ export class HomePage {
             list: 'Unfavorite'
         });
 
-        this.http.post(this.api.url + '/user/managelists/favi/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/managelists/favi/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
             let toast = this.toastCtrl.create({
                 message: data.json().success,
                 duration: 3000
@@ -214,7 +198,7 @@ export class HomePage {
      list: 'Favorite'
      });
 
-     this.http.post(this.api.url + '/user/managelists/favi/1/'+ user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+     this.api.http.post(this.api.url + '/user/managelists/favi/1/'+ user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
      let toast = this.toastCtrl.create({
      message: data.json().success,
      duration: 3000
@@ -226,34 +210,35 @@ export class HomePage {
      }
      }*/
 
-    addFavorites(user, index = 0) {
-
+    addFavorites(user) {
+        let params, url;
+        let index = this.users.indexOf(user);
         if (this.params.list == 'fav') {
-            this.users.splice(this.users.indexOf(user), 1);
+            this.users.splice(index, 1);
         }
 
 
-        if (user.isFav == false) {
-            user.isFav = true;
-
-            var params = JSON.stringify({
+        if (user.isFav == '0') {
+            this.users[index].isFav = '1';
+            user.isFav = '1';
+            params = JSON.stringify({
                 list: 'Favorite'
             });
 
-            var url = this.api.url + '/user/managelists/favi/1/' + user.id;
+            url = this.api.url + '/user/managelists/favi/1/' + user.id;
 
         } else {
 
-            user.isFav = false;
-
-            var params = JSON.stringify({
+            this.users[index].isFav = '0';
+            user.isFav = '0';
+            params = JSON.stringify({
                 list: 'Unfavorite'
             });
 
-            var url = this.api.url + '/user/managelists/favi/0/' + user.id;
+            url = this.api.url + '/user/managelists/favi/0/' + user.id;
         }
 
-        this.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
             let toast = this.toastCtrl.create({
                 message: data.json().success,
                 duration: 3000
@@ -314,7 +299,7 @@ export class HomePage {
             this.username = this.navParams.get('username');
             this.password = this.navParams.get('password');
 
-            this.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+            this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
                 this.api.hideLoad();
                 this.users = data.json().users.items;
                 this.texts = data.json().texts;
@@ -334,11 +319,11 @@ export class HomePage {
                         this.api.setHeaders(false, null, null);
                         // Removing data storage
                         this.api.storage.remove('user_data');
-                        this.storage.remove('username');
-                        this.storage.remove('password');
-                        this.storage.remove('status');
-                        this.storage.remove('user_id');
-                        this.storage.remove('user_photo');
+                        this.api.storage.remove('username');
+                        this.api.storage.remove('password');
+                        this.api.storage.remove('status');
+                        this.api.storage.remove('user_id');
+                        this.api.storage.remove('user_photo');
                         this.navCtrl.setRoot(LoginPage, {error: err.error});
                         this.navCtrl.popToRoot();
                     }
@@ -348,7 +333,7 @@ export class HomePage {
             //alert(this.params_str);
             this.api.showLoad();
 
-            this.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe(data => {
                 this.api.hideLoad();
                 this.users = data.json().users.items;
                 this.texts = data.json().texts;
@@ -374,11 +359,11 @@ export class HomePage {
                         this.api.setHeaders(false, null, null);
                         // Removing data storage
                         this.api.storage.remove('user_data');
-                        this.storage.remove('username');
-                        this.storage.remove('password');
-                        this.storage.remove('status');
-                        this.storage.remove('user_id');
-                        this.storage.remove('user_photo');
+                        this.api.storage.remove('username');
+                        this.api.storage.remove('password');
+                        this.api.storage.remove('status');
+                        this.api.storage.remove('user_id');
+                        this.api.storage.remove('user_photo');
                         this.navCtrl.setRoot(LoginPage, {error: err.error});
                         this.navCtrl.popToRoot();
                     }
@@ -396,7 +381,7 @@ export class HomePage {
 
             if (this.loadMoreResults) {
                 this.loadMoreResults = false;
-                this.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe(data => {
                     this.loadMoreResults = true;
                     if (data.json().users.items.length < this.params.resultsPerPage) {
                         this.loader = false;

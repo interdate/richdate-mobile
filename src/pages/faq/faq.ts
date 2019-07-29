@@ -10,7 +10,7 @@ import {Http} from '@angular/http';
  * Ionic pages and navigation.
  */
 
-//declare var $: any;
+//import * as $ from "jquery";
 
 @IonicPage()
 @Component({
@@ -35,7 +35,7 @@ export class FaqPage {
       }
   
       getPageData() {
-          this.http.get(this.api.url + '/faq', this.api.header).subscribe(data => {
+          this.api.http.get(this.api.url + '/faq', this.api.header).subscribe(data => {
               this.page = data.json();
               console.log(this.page);
           });
