@@ -66,7 +66,12 @@
             </div>
         </div>
     </div>
-
+    <div *ngIf="new_user">
+        <!-- Event snippet for richdate for mobile conversion page -->
+        <script>
+            gtag('event', 'conversion', {'send_to': 'AW-939419019/Z_ThCIq1sqYBEIvL-b8D'});
+        </script>
+    </div>
     <div *ngIf="new_user" class="login-btn">
         <button color="danger" (click)=onHomePage() ion-button block>סיום הרשמה</button>
     </div>

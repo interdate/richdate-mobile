@@ -31,6 +31,7 @@ export class ApiQuery {
   public signupData: { username: any, password: any };
   public isPay: any;
   public myPhotos: any;
+  public isBanner: any = false;
 
   constructor(
       public storage: Storage,
@@ -47,7 +48,7 @@ export class ApiQuery {
       public plt: Platform
   ) {
    // this.url = 'http://10.0.0.12:8100';
-      //this.url = 'http://localhost:8102';
+      //this.url = 'http://localhost:8101';
       this.url = '/api/v9';
 
       this.storage.get('user_id').then((val) => {

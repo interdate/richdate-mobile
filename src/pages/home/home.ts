@@ -309,6 +309,7 @@ export class HomePage {
                 if (data.json().users.items.length < this.params.resultsPerPage) {
                     this.loader = false;
                 }
+              $(window).resize();
                 //this.setDistanceFormat();
             }, err => {
                 this.api.hideLoad();
@@ -419,7 +420,11 @@ export class HomePage {
     ionViewWillEnter() {
         this.api.pageName = 'HomePage';
         $('.back-btn').hide();
-
+      // setTimeout(
+      //   function () {
+      //     $(window).resize();
+      //   },1000
+      // );
     }
 
 

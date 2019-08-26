@@ -555,8 +555,10 @@ export class MyApp {
     }
 
     getBanner() {
-        this.api.http.get(this.api.url + '/user/banner', this.api.header).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/banner_new', this.api.header).subscribe(data => {
             this.banner = data.json();
+            this.api.isBanner = (this.banner.src == '') ? false : true;
+            console.log("isBanner: " + this.api.isBanner);
         });
     }
 
