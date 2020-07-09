@@ -95,7 +95,6 @@ import {ImagesPageModule} from "../pages/images/images.module";
           defaultHistory: [HomePage]
         },
         {component: DialogPage, name: 'Chat', segment: 'dialog/:id', defaultHistory: [HomePage]},
-        // {component: VideoChatPage, name: 'VideoChat', segment: 'video-chat/:id', defaultHistory: [HomePage]},
         {component: FullScreenProfilePage, name: 'Full Screen Profile', segment: 'full-screen-profile', defaultHistory: [HomePage]},
         {component: SubscriptionPage, name: 'Subscription', segment: 'subscription'},
         {component: RegisterPage, name: 'פרופיל שלי', segment: 'edit/:step', defaultHistory: [HomePage]},
