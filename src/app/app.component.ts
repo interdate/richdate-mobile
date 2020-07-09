@@ -35,6 +35,8 @@ import {FirebaseMessagingProvider} from "../providers/firebase-messaging";
 
 
 import * as $ from "jquery";
+// import {VideoChatPage} from "../pages/video-chat/video-chat";
+//import {WebrtcProvider} from "../providers/webrtc";
 
 @Component({
     templateUrl: 'app.html'
@@ -84,20 +86,20 @@ export class MyApp {
                 public market: Market,
                 private browserPush: FirebaseMessagingProvider,
                 public push: Push) {
+                // public webRTC: WebrtcProvider) {
 
         // let status bar overlay webview
 
 // set status bar to white
         //this.statusBar.styleBlackTranslucent();
 
-        this.api.http.get(api.url + '/user/menu/', api.header).subscribe(data => {
+        this.api.http.get(api.url + '/user/menu/', api.header).subscribe((data: any) => {
 
-
-            let menu = data.json().menu;
-            this.api.resultsPerPage = data.json().resultsPerPage;
+            let menu = data.menu;
+            this.api.resultsPerPage = data.resultsPerPage;
             this.initMenuItems(menu);
-            //console.log('page: ' + this.api.pageName);
-            if(this.api.pageName != 'ProfilePage') {
+            //console.log('page: ' + this.api.pageName);// && this.api.pageName != 'VideoChatPage'
+            if(this.api.pageName != 'ProfilePage' && this.api.pageName != 'DialogPage' && this.api.pageName != 'HomePage') {
                 this.api.storage.get('user_id').then((val) => {
 
                     this.initPushNotification();
@@ -157,12 +159,12 @@ export class MyApp {
                     headers = this.api.setHeaders(true, false, false, '1');
                 }
 
-                this.api.http.get(this.api.url + '/user/statistics/', headers).subscribe(data => {
+                this.api.http.get(this.api.url + '/user/statistics/', headers).subscribe((data: any) => {
 
-                    let statistics = data.json().statistics;
+                    let statistics = data.statistics;
 
-                    this.status = data.json().status;
-                    this.isPay = data.json().isPay;
+                    this.status = data.status;
+                    this.isPay = data.isPay;
                     this.api.status = this.status;
 
                     this.menu_items_login.push();
@@ -184,8 +186,8 @@ export class MyApp {
                         this.menu_items_footer2[0].count = statistics.fav;//favorited
                         this.menu_items_footer2[1].count = statistics.favedme;//favoritedMe
                     }
-                    this.is2D = data.json().is2D;
-                    this.api.isPay = data.json().isPay;
+                    this.is2D = data.is2D;
+                    this.api.isPay = data.isPay;
 
                     if (this.api.pageName != 'SubscriptionPage' && this.api.pageName != 'ContactUsPage'
                         && this.api.pageName != 'LoginPage' && this.api.pageName != 'PagePage' && this.is2D == 0 && this.api.isPay == 0) {
@@ -555,8 +557,8 @@ export class MyApp {
     }
 
     getBanner() {
-        this.api.http.get(this.api.url + '/user/banner_new', this.api.header).subscribe(data => {
-            this.banner = data.json();
+        this.api.http.get(this.api.url + '/user/banner_new', this.api.header).subscribe((data: any) => {
+            this.banner = data;
             this.api.isBanner = (this.banner.src == '') ? false : true;
             console.log("isBanner: " + this.api.isBanner);
         });
@@ -639,29 +641,110 @@ export class MyApp {
     getBingo() {
         this.api.storage.get('user_id').then((val) => {
             if (val && this.api.password) {
-                this.api.http.get(this.api.url + '/user/bingo', this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.get(this.api.url + '/user/bingo', this.api.setHeaders(true)).subscribe((data: any) => {
                     //this.api.storage.set('status', this.status);
-                    this.texts = data.json().texts;
-                    this.avatar = data.json().texts.avatar;
-                    this.api.myPhotos = data.json().photos;
+                    this.texts = data.texts;
+                    this.avatar = data.texts.avatar;
+                    this.api.myPhotos = data.photos;
                     // DO NOT DELETE
-                    /*if (this.status != data.json().status) {
-                     this.status = data.json().status;
+                    /*if (this.status != data.status) {
+                     this.status = data.status;
                      this.checkStatus();
                      } else {
-                     this.status = data.json().status;
+                     this.status = data.status;
                      }*/
-                    if (data.json().texts.items && data.json().texts.items.length > 0) {
+                    if (data.texts.items && data.texts.items.length > 0) {
                         let params = JSON.stringify({
-                            bingo: data.json().texts.items[0]
+                            bingo: data.texts.items[0]
                         });
-                        this.nav.push(BingoPage, {data: data.json()});
+                        this.nav.push(BingoPage, {data: data});
                         this.api.http.post(this.api.url + '/user/bingo/splashed', params, this.api.setHeaders(true)).subscribe(data => {
                         });
                     }
                 });
+
+                //call
+                if(this.api.pageName != 'SubscriptionPage') {
+                  this.api.http.get(this.api.url + '/user/call/get', this.api.setHeaders(true)).subscribe((data: any) => {
+                    console.log(this.api.videoChat == null && data.calls);
+                    if (this.api.videoChat == null && data.calls) {
+                      this.callAlert(data);
+                    }
+                  });
+                }
             }
         });
+    }
+
+    async callAlert(data){
+      if(this.api.callAlertShow == false && this.api.videoChat == null) {
+        this.api.playAudio('wait');
+        this.api.callAlertShow = true;
+        const param = {
+          id: data.calls.msgFromId,
+          chatId: data.calls.msgId,
+          alert: true,
+          username: data.calls.nickName,
+        };
+        this.api.checkVideoStatus(param);
+        this.api.callAlert = await this.api.alertCtrl.create({
+          title: '<img class="alert-call" src="' + data.calls.img.url + '"> ' + data.calls.title,
+          // header: 'שיחה נכנסת',
+          message: data.calls.title.message,
+          buttons: [
+            {
+              text: data.calls.buttons[1],
+              cssClass: 'redCall',
+              role: 'cancel',
+              handler: () => {
+                this.api.stopAudio();
+                this.api.callAlertShow = false;
+                this.api.http.post(this.api.url + '/user/call/' + param.id, {
+                  message: 'close',
+                  id: param.chatId
+                }, this.api.setHeaders(true)).subscribe((data: any) => {
+                  // let res = data;
+                  console.log('close');
+                  if(this.api.callAlert !== null) {
+                    this.api.callAlert.dismiss();
+                    this.api.callAlert = null;
+                  }
+
+                  // console.log(res);
+                  // this.status == 'close';
+                  // location.reload();
+                });
+              }
+            },
+            {
+              text: data.calls.buttons[0],
+              cssClass: 'greenCall',
+              handler: () => {
+                if(this.api.callAlert !== null) {
+                  this.api.callAlert.dismiss();
+                  this.api.callAlert = null;
+                }
+                // this.webRTC.partnerId = param.id;
+                // this.webRTC.chatId = param.chatId;
+                // this.nav.push(VideoChatPage, param);
+                console.log('open');
+                this.api.callAlertShow = false;
+
+                this.api.openVideoChat(param);
+              }
+            }
+          ]
+        });
+
+
+        await this.api.callAlert.present();
+        this.api.callAlert.onWillDismiss(() => {
+          this.api.callAlertShow = false;
+          this.api.callAlert = null;
+          this.api.stopAudio();
+          console.log('dismiss');
+        });
+      }
     }
 
     dialogPage() {
@@ -671,26 +754,7 @@ export class MyApp {
     }
 
     getMessage() {
-        //let page = this.nav.getActive();
-        /*
-         this.api.http.get(this.api.url + '/user/new/messages', this.api.setHeaders(true)).subscribe(data => {
 
-         if ((this.new_message == '' || typeof this.new_message == 'undefined') && !(this.api.pageName == 'DialogPage')) {
-         this.new_message = data.json().messages[0];
-         if (typeof this.new_message == 'object') {
-         this.api.http.get(this.api.url + '/user/messages/notify/' + this.new_message.id, this.api.setHeaders(true)).subscribe(data => {
-         });
-         }
-         }
-
-         this.message = data.json();
-
-         this.menu_items[2].count = data.json().newNotificationsNumber;
-         this.menu_items[0].count = data.json().newMessagesNumber;
-         this.menu_items_footer2[2].count = data.json().newNotificationsNumber;
-         this.menu_items_footer1[3].count = data.json().newMessagesNumber;
-         });
-         */
     }
 
     checkStatus() {
@@ -742,6 +806,7 @@ export class MyApp {
 
             this.getBanner();
             var that = this;
+            $(window).resize();
             clearInterval(this.ajaxInterval);
             setTimeout(function () {
                 that.getStatistics();

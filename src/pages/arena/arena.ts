@@ -47,16 +47,16 @@ export class ArenaPage {
          user_id: user_id
          });*/
 
-        this.api.http.get(api.url + '/users/forLikes/'+user_id+'/0', api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(api.url + '/users/forLikes/'+user_id+'/0', api.setHeaders(true)).subscribe((data: any) => {
             this.api.hideLoad();
-            this.users = data.json().users.items;
-            this.texts = data.json().texts;
+            this.users = data.users.items;
+            this.texts = data.texts;
 
 
             // If there's message, than user can't be on this page
-            if (data.json().userHasNoMainImage) {
+            if (data.userHasNoMainImage) {
                 let toast = this.toastCtrl.create({
-                    message: data.json().arenaStatus,
+                    message: data.arenaStatus,
                     showCloseButton: true,
                     closeButtonText: 'אישור'
                 });

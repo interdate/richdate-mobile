@@ -6,6 +6,8 @@ import {LoginPage} from "../login/login";
 import {DialogPage} from "../dialog/dialog";
 
 import * as $ from "jquery";
+// import {VideoChatPage} from "../video-chat/video-chat";
+// import {WebrtcProvider} from "../../providers/webrtc";
 
 @Component({
     selector: 'page-home',
@@ -47,6 +49,17 @@ export class HomePage {
                 public navParams: NavParams,
                 public api: ApiQuery,
                 public events: Events) {
+                // public webRTC: WebrtcProvider) {
+        this.api.audioCall = new Audio();
+        this.api.audioCall.src = 'https://m.richdate.co.il/phone_ringing.mp3';
+        this.api.audioCall.loop = true;
+        this.api.audioCall.load();
+        this.api.audioWait = new Audio();
+        this.api.audioWait.src = 'https://m.richdate.co.il/landline_phone_ring.mp3';
+        this.api.audioWait.loop = true;
+        this.api.audioWait.load();
+
+
 
         if (navParams.get('params') && navParams.get('params') != 'login') {
 
@@ -82,6 +95,15 @@ export class HomePage {
                 this.password = password;
                 this.username = username;
                 this.getUsers();
+                if(this.navParams.get('id') && parseInt(this.navParams.get('id')) > 0) {
+                  this.api.http.get(this.api.url + '/user/call/user/data/' + this.navParams.get('id'), this.api.setHeaders(true)).subscribe((data: any) => {
+                    this.api.openVideoChat({id: navParams.get('id'), chatId: 0, alert: false, username: data.data.userNick});
+                  }, err => {
+                    console.log("Oops!");
+                    console.log(err);
+                  });
+
+                }
             });
         });
 
@@ -109,6 +131,11 @@ export class HomePage {
         this.navCtrl.push(DialogPage, {
             user: user
         });
+    }
+
+    toVideoChat(user) {
+
+      this.api.openVideoChat({id: user.id, chatId: 0, alert: false, username: user.nickName});
     }
 
     addLike(user) {
@@ -158,11 +185,10 @@ export class HomePage {
         this.users.splice(this.users.indexOf(user), 1);
         this.events.publish('statistics:updated');
 
-
-        this.api.http.post(this.api.url + '/user/managelists/black/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/managelists/black/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
 
             toast = this.toastCtrl.create({
-                message: data.json().success,
+                message: data.success,
                 duration: 3000
             });
             toast.present();
@@ -175,9 +201,9 @@ export class HomePage {
             list: 'Unfavorite'
         });
 
-        this.api.http.post(this.api.url + '/user/managelists/favi/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/managelists/favi/0/' + user.id, params, this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
             let toast = this.toastCtrl.create({
-                message: data.json().success,
+                message: data.success,
                 duration: 3000
             });
 
@@ -238,9 +264,9 @@ export class HomePage {
             url = this.api.url + '/user/managelists/favi/0/' + user.id;
         }
 
-        this.api.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
             let toast = this.toastCtrl.create({
-                message: data.json().success,
+                message: data.success,
                 duration: 3000
             });
 
@@ -299,17 +325,21 @@ export class HomePage {
             this.username = this.navParams.get('username');
             this.password = this.navParams.get('password');
 
-            this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+            this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
                 this.api.hideLoad();
-                this.users = data.json().users.items;
-                this.texts = data.json().texts;
-                this.user_counter = data.json().users.items.length;
-                this.form_filter = data.json().filters;
-                this.filter = data.json().filter;
-                if (data.json().users.items.length < this.params.resultsPerPage) {
+                this.users = data.users.items;
+                this.texts = data.texts;
+                this.user_counter = data.users.items.length;
+                this.form_filter = data.filters;
+                this.filter = data.filter;
+                if (data.users.items.length < this.params.resultsPerPage) {
                     this.loader = false;
                 }
-              $(window).resize();
+              // setTimeout(
+              //      function () {
+              //        $(window).resize();
+              //        console.log('resize');
+              //      }, 1500);
                 //this.setDistanceFormat();
             }, err => {
                 this.api.hideLoad();
@@ -334,18 +364,26 @@ export class HomePage {
             //alert(this.params_str);
             this.api.showLoad();
 
-            this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe((data: any) => {
                 this.api.hideLoad();
-                this.users = data.json().users.items;
-                this.texts = data.json().texts;
-                this.user_counter = data.json().users.items.length;
-                this.form_filter = data.json().filters;
-                this.filter = data.json().filter;
+                this.users = data.users.items;
+                this.texts = data.texts;
+                this.user_counter = data.users.items.length;
+                this.form_filter = data.filters;
+                this.filter = data.filter;
 
-                if (data.json().users.items.length < this.params.resultsPerPage) {
+                if (data.users.items.length < this.params.resultsPerPage) {
                     this.loader = false;
                 }
                 //this.setDistanceFormat();
+              //   $('.show-page .scroll-content').resize();
+              // console.log('resize');
+              //   setTimeout(
+              //   function () {
+              //     $(window).resize();
+              //     $('.show-page .scroll-content').resize();
+              //     console.log('resize');
+              //   }, 1500);
             }, err => {
                 this.api.hideLoad();
 
@@ -382,12 +420,12 @@ export class HomePage {
 
             if (this.loadMoreResults) {
                 this.loadMoreResults = false;
-                this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.post(this.api.url + '/users/search/', this.params_str, this.api.setHeaders(true)).subscribe((data: any) => {
                     this.loadMoreResults = true;
-                    if (data.json().users.items.length < this.params.resultsPerPage) {
+                    if (data.users.items.length < this.params.resultsPerPage) {
                         this.loader = false;
                     }
-                    for (let person of data.json().users.items) {
+                    for (let person of data.users.items) {
                         this.users.push(person);
                     }
                     //this.setDistanceFormat();

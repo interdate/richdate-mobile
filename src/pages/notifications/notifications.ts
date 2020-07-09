@@ -34,14 +34,14 @@ export class NotificationsPage {
     }
 
     getPage() {
-        this.api.http.get(this.api.url+'/user/likes/notifications',this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(this.api.url+'/user/likes/notifications',this.api.setHeaders(true)).subscribe((data: any) => {
 
-            this.users = data.json().likesNotifications.items;
+            this.users = data.likesNotifications.items;
             //console.log('USERS: ' + JSON.stringify(this.users));
 
-            this.data = data.json();
+            this.data = data;
 
-            this.texts = data.json().texts;
+            this.texts = data.texts;
         },err => {
             console.log("Oops!");
         });
@@ -50,11 +50,11 @@ export class NotificationsPage {
     toDialog(user) {
         let user_id = user.userId;
         let bingo = user.bingo;
-        this.api.http.post(this.api.url+'/user/notification/'+user.id+'/read',{},this.api.setHeaders(true)).subscribe(data => {
+        this.api.http.post(this.api.url+'/user/notification/'+user.id+'/read',{},this.api.setHeaders(true)).subscribe((data: any) => {
 
             this.getPage();
 
-            this.users = data.json().users;
+            this.users = data.users;
 
             if( bingo == 1) {
                 this.navCtrl.push(DialogPage, {

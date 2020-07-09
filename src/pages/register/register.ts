@@ -55,14 +55,14 @@ export class RegisterPage {
 
 
         this.api.http.post(this.api.url + '/user/register', this.user, header).subscribe(
-            data => {
+          (data: any) => {
 
                 //this.form = {};
                 $('#labelconfirmMails').remove();
-                this.form = data.json().form;
-                this.user = data.json().user;
+                this.form = data.form;
+                this.user = data.user;
 
-                this.errors = data.json().errors;
+                this.errors = data.errors;
 
                 if (this.user.step == 4) {
                     this.api.setHeaders(true, this.user.userNick, this.user.userPass);

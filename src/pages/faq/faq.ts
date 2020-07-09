@@ -20,31 +20,31 @@ import {Http} from '@angular/http';
 export class FaqPage {
 
   page: Array<{ name: string, faq: string }>;
-  
+
       hightlightStatus: Array<boolean> = [];
-  
+
       constructor(public navCtrl: NavController,
                   public navParams: NavParams,
                   public http: Http,
                   public api: ApiQuery) {
           this.getPageData();
       }
-  
+
       toggleAnswer(){
-  
+
       }
-  
+
       getPageData() {
-          this.api.http.get(this.api.url + '/faq', this.api.header).subscribe(data => {
-              this.page = data.json();
+          this.api.http.get(this.api.url + '/faq', this.api.header).subscribe((data: any) => {
+              this.page = data;
               console.log(this.page);
           });
       }
-  
+
       ionViewDidLoad() {
           console.log('ionViewDidLoad FaqPage');
       }
-  
+
       ionViewWillEnter() {
           this.api.pageName = 'FaqPage';
       }

@@ -50,6 +50,10 @@ export class FullScreenProfilePage {
         });
     }
 
+    toVideoChat() {
+      this.api.openVideoChat({id: this.user.userId, chatId: 0, alert: false, username: this.user.nickName});
+    }
+
     addFavorites() {
         let url, message, params;
         if (this.user.is_in_favorite_list == true) {
@@ -91,15 +95,16 @@ export class FullScreenProfilePage {
 
         toast.present();
 
-        let params = JSON.stringify({
-            toUser: this.user.id,
-        });
 
-        this.api.http.post(this.api.url + '/api/v1/likes/' + this.user.id, params, this.api.setHeaders(true)).subscribe(data => {
-            console.log(data);
-        }, err => {
-            console.log("Oops!");
-        });
+      let params = JSON.stringify({
+        toUser: this.user.id,
+      });
+
+      this.api.http.post(this.api.url + '/user/like/' + this.user.id, params, this.api.setHeaders(true)).subscribe(data => {
+        console.log(data);
+      }, err => {
+        console.log("Oops!");
+      });
     }
 
     ionViewWillEnter() {

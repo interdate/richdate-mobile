@@ -5,7 +5,7 @@
   Ionic pages and navigation.
 -->
 <ion-header>
-  
+
   </ion-header>
   <ion-content>
     <div *ngIf="myId != user.userId && user.userId > 0" class="profile-buttons">
@@ -17,7 +17,9 @@
            class="favorite-profile-btn">
         <img src="assets/img/icons/padd.png"></div>
       <div *ngIf="user.is_in_favorite_list" (click)="addFavorites()" class="disabled favorite-profile-btn"><img src="assets/img/icons/cap.png"></div>
-    </div> 
+      <div class="video-chat-btn" (click)="toVideoChat()">
+      </div>
+    </div>
     <div class="close-warp" (click)="goBack()">
      <div class="close"><img alt="close" src="assets/img/icons/psclose.png"></div>
      </div>
@@ -25,6 +27,6 @@
       <ion-slide *ngFor="let usr of user.photos" [ngClass]="{'private': usr.private == '1'}">
         <img src="{{ usr.url }}">
       </ion-slide>
-  
+
     </ion-slides>
   </ion-content>

@@ -50,8 +50,8 @@ export class AdminMessagesPage {
     }
 
     getPage() {
-        this.api.http.get(this.api.url + '/user/admin-messages', this.api.setHeaders(true)).subscribe(data => {
-            this.messages = data.json().messages;
+        this.api.http.get(this.api.url + '/user/admin-messages', this.api.setHeaders(true)).subscribe((data: any) => {
+            this.messages = data.messages;
         }, err => {
             console.log("Oops!");
         });

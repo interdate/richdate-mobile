@@ -38,7 +38,7 @@ submit() {
                'freeze_account_reason': this.form.text.value
            });
 
-           this.api.http.post(this.api.url + '/freeze', params, this.api.header).subscribe(data => this.validate(data.json()));
+           this.api.http.post(this.api.url + '/freeze', params, this.api.header).subscribe((data: any) => this.validate(data));
 
 
         }

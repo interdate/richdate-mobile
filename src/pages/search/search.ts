@@ -45,20 +45,20 @@ export class SearchPage {
       public navParams: NavParams,
       public api: ApiQuery
       ) {
-  
+
       this.age = {
         'lower': this.form.form.ageFrom.value,
         'upper': this.form.form.ageTo.value
       };
-  
+
       for (let i = 18; i <= 65; i++) {
         this.ages.push({num: i});
       }
-  
-      this.api.http.get( api.url + '/user/form/sreach/', api.setHeaders(true) ).subscribe(data => {
-  
-         this.form.form = data.json();
-  
+
+      this.api.http.get( api.url + '/user/form/sreach/', api.setHeaders(true) ).subscribe((data: any) => {
+
+         this.form.form = data;
+
         },err => {
           console.log("Oops!");
         });
@@ -68,10 +68,10 @@ export class SearchPage {
       console.log(this.form);
       //this.toSearchResultsPage('search-form-1');
     }
-  
+
 
     toSearchResultsPage(){
-      
+
           if( this.form.form.username.value == '' ) {
 
             let params = JSON.stringify({
@@ -91,7 +91,7 @@ export class SearchPage {
             /*let params = "action=search&quick_search[region]=" + this.form.form.region.value +
             "&quick_search[ageFrom]="+ this.age.lower +
             "&quick_search[ageTo]=" + this.age.upper; distance: this.form.form.distance.value*/
-      
+
             this.navCtrl.push(HomePage, { params: params });
           }else{
             let params = JSON.stringify({
@@ -113,11 +113,11 @@ export class SearchPage {
                 username: this.form.form.username.value
               }
             });*/
-      
+
             this.navCtrl.push(HomePage, { params: params });
           }
     }
-      
+
     getAgeValues(event) {
           if( event.value.upper != 0) {
             this.ageUpper = event.value.upper;
@@ -126,15 +126,15 @@ export class SearchPage {
             this.ageLower = event.value.lower;
           }
     }
-      
+
     toAdvancedPage() {
         this.navCtrl.push(AdvancedsearchPage);
     }
-      
+
     ionViewWillEnter() {
         this.api.pageName = 'SearchPage';
     }
-  
+
     ionViewDidLoad() {
       this.type_search = 'search-1';
     }

@@ -24,7 +24,7 @@ export class ChangePasswordPage {
             _token: {},
             text: {}
         }};
-  
+
     oldPassword: any;
     first_pass: any;
     second_pass: any;
@@ -37,7 +37,7 @@ export class ChangePasswordPage {
     }
 
     formSubmit() {
-    
+
         let params = JSON.stringify({
             changePassword: {
                 oldPassword: this.form.form.oldPassword.value,
@@ -49,9 +49,9 @@ export class ChangePasswordPage {
             }
         });
 
-        this.api.http.post(this.api.url + '/passwords', params, this.api.header).subscribe(data => this.validate(data.json()));
+        this.api.http.post(this.api.url + '/passwords', params, this.api.header).subscribe((data: any) => this.validate(data));
     }
-    
+
     validate(response) {
 
         response = response.success;

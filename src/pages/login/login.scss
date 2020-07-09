@@ -19,12 +19,16 @@ page-login {
     text-decoration: underline;
   }
   .bg-image {
-    background: url(../assets/img/bg_page_login.jpg);
+    background-image: url(../assets/img/bg_page_login.jpg);
     //background-size: auto calc(100% - 50px);
     background-size: cover;
     background-position: center bottom;
     background-repeat: no-repeat;
     background-color: #0f1526;
+  }
+
+  .bg-image.top-banner{
+    background-position: center 70px;
   }
 
   .content-ios.bg-image {
@@ -66,5 +70,7 @@ page-login {
       margin-top: 120px !important;
     }
   }
-
+  //.link-banner{
+  //  bottom: 0px;
+  //}
 }

@@ -1,0 +1,26 @@
+{
+  "name": "RichDate",
+  "version": "0.0.1",
+  "author": "Interdate team",
+  "homepage": "https://GREENDATE.CO.IL/TEST1111",
+  "private": true,
+  "scripts": {
+    "clean": "ionic-app-scripts clean",
+    "build": "ionic-app-scripts build",
+    "lint": "ionic-app-scripts lint",
+    "ionic:build": "ionic-app-scripts build",
+    "ionic:serve": "ionic-app-scripts serve"
+  },
+  "dependencies": {
+    "node-sass": "^4.9.4",
+    "peer": "^0.5.3",
+    "peerjs": "^1.2.0",
+    "rxjs": "^5.5.10",
+    "sw-toolbox": "3.6.0",
+    "zone.js": "0.8.26"
+  },
+  "devDependencies": {
+
+  },
+  "description": "An Ionic project"
+}

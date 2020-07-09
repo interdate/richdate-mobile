@@ -41,8 +41,8 @@ export class ActivationPage {
 
   getForm(data = '') {
 
-      this.api.http.post(this.api.url + '/user/activate', data, this.api.setHeaders(true)).subscribe(resp => {
-          this.form.errorMessage = resp.json().activation;
+      this.api.http.post(this.api.url + '/user/activate', data, this.api.setHeaders(true)).subscribe((resp: any) => {
+          this.form.errorMessage = resp.activation;
 
           if(this.form.errorMessage) {
               this.api.hideLoad();

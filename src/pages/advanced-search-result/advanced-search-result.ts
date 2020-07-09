@@ -153,9 +153,9 @@ export class AdvancedSearchResultPage {
             url = this.api.url + '/user/managelists/favi/0/' + user.id;
         }
 
-        this.api.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(url, params, this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
             let toast = this.toastCtrl.create({
-                message: data.json().success,
+                message: data.success,
                 duration: 3000
             });
 
@@ -247,13 +247,13 @@ export class AdvancedSearchResultPage {
 
         this.url = '/user/advanced/search';
 
-        this.api.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe(data => {
-            this.users = data.json().users;
-            this.texts = data.json().texts;
-            this.form_filter = data.json().filters;
-            this.filter = data.json().form.filter;
-            //this.user_counter = data.json().users.length;
-            if (data.json().users.length < this.api.resultsPerPage) {
+        this.api.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe((data: any) => {
+            this.users = data.users;
+            this.texts = data.texts;
+            this.form_filter = data.filters;
+            this.filter = data.form.filter;
+            //this.user_counter = data.users.length;
+            if (data.users.length < this.api.resultsPerPage) {
                 this.loader = false;
             }
             this.api.hideLoad();
@@ -272,13 +272,13 @@ export class AdvancedSearchResultPage {
             this.url = '/user/advanced/search';
             if(this.loadMoreResults) {
                 this.loadMoreResults = false;
-                this.api.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.post(this.api.url + this.url + '', this.get_params, this.api.setHeaders(true)).subscribe((data: any) => {
                     this.loadMoreResults = true;
-                    if (data.json().users.length < this.api.resultsPerPage) {
+                    if (data.users.length < this.api.resultsPerPage) {
                         this.loader = false;
                     }
                     //alert(this.loader);
-                    for (let person of data.json().users) {
+                    for (let person of data.users) {
                         this.users.push(person);
                     }
                 });

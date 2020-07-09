@@ -23,10 +23,10 @@ export class SettingsPage {
                 private toastCtrl: ToastController,
                 public api: ApiQuery) {
 
-        this.api.http.get(api.url + '/user/settings', api.setHeaders(true)).subscribe(data => {
+        this.api.http.get(api.url + '/user/settings', api.setHeaders(true)).subscribe((data: any) => {
             //this.form = data.json().settings;
-            this.form.newMessPushNotif = Boolean(parseInt(data.json().settings.newMessPushNotif));
-            this.form.userGetMsgToEmail = Boolean(parseInt(data.json().settings.userGetMsgToEmail));
+            this.form.newMessPushNotif = Boolean(parseInt(data.settings.newMessPushNotif));
+            this.form.userGetMsgToEmail = Boolean(parseInt(data.settings.userGetMsgToEmail));
         });
 
 

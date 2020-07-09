@@ -59,10 +59,10 @@ export class ProfilePage {
             this.api.storage.get('username').then((username) => {
                 this.api.storage.get('password').then((password) => {
 
-                    this.api.http.get(api.url + '/user/profile/' + this.user.id, api.setHeaders(true,username,password)).subscribe(data => {
-                        this.user = data.json();
-                        this.formReportAbuse = data.json().formReportAbuse;
-                        this.texts = data.json().texts;
+                    this.api.http.get(api.url + '/user/profile/' + this.user.id, api.setHeaders(true,username,password)).subscribe((data: any) => {
+                        this.user = data;
+                        this.formReportAbuse = data.formReportAbuse;
+                        this.texts = data.texts;
                         this.api.hideLoad();
                         this.imageClick = true;
                     });
@@ -73,11 +73,11 @@ export class ProfilePage {
             this.api.storage.get('user_id').then((val) => {
                 if (val) {
                     this.myId = val;
-                    this.api.http.get(api.url + '/user/profile/' + this.myId, api.setHeaders(true)).subscribe(data => {
-                        this.user = data.json();
+                    this.api.http.get(api.url + '/user/profile/' + this.myId, api.setHeaders(true)).subscribe((data: any) => {
+                        this.user = data;
 
-                        this.formReportAbuse = data.json().formReportAbuse;
-                        this.texts = data.json().texts;
+                        this.formReportAbuse = data.formReportAbuse;
+                        this.texts = data.texts;
                         this.api.hideLoad();
                         this.imageClick = true;
                     });
@@ -104,6 +104,10 @@ export class ProfilePage {
 
     scrollToBottom() {
         this.content.scrollTo(0, this.content.getContentDimensions().scrollHeight, 300);
+    }
+
+    toVideoChat() {
+      this.api.openVideoChat({id: this.user.userId, chatId: 0, alert: false, username: this.user.nickName});
     }
 
     addFavorites() {
@@ -168,9 +172,9 @@ export class ProfilePage {
 
             var act = this.user.is_in_black_list == 1 ? 1 : 0;
 
-            this.api.http.post(this.api.url + '/user/managelists/black/' + act + '/' + this.user.userId, params, this.api.setHeaders(true)).subscribe(data => {
+            this.api.http.post(this.api.url + '/user/managelists/black/' + act + '/' + this.user.userId, params, this.api.setHeaders(true)).subscribe((data: any) => {
                 let toast = this.toastCtrl.create({
-                    message: data.json().success,
+                    message: data.success,
                     duration: 3000
                 });
 

@@ -60,7 +60,7 @@ export class SubscriptionPage {
         let checkStatus = setInterval(
             function(){
                 console.log('Payment status: ' + that.api.isPay);
-                that.api.http.post(that.api.url + '/user/login/', '', that.api.setHeaders1(true)).subscribe((data: any) => {
+                that.api.http.post(that.api.url + '/user/login/', '', that.api.setHeaders(true)).subscribe((data: any) => {
                     if(data.isPay == '1') {
                         that.api.isPay = data.isPay;
                         clearInterval(checkStatus);

@@ -197,12 +197,17 @@ export class DialogPage {
         this.micStatus === true ? this.micStatus = false : this.micStatus = true;
     }
 
+    toVideoChat() {
+      var userId = typeof this.user.userId != "undefined" ? this.user.userId : this.user.id;
+      this.api.openVideoChat({id: userId, chatId: 0, alert: false, username: this.user.username});
+    }
+
     getPage() {
         var userId = typeof this.user.userId != "undefined" ? this.user.userId : this.user.id;
         this.reciver_id = userId;
 
-        this.api.http.get(this.api.url + '/user/chat/' + userId, this.api.setHeaders(true)).subscribe(data => {
-            this.user = data.json().user;
+        this.api.http.get(this.api.url + '/user/chat/' + userId, this.api.setHeaders(true)).subscribe((data: any) => {
+            this.user = data.user;
             /*this.texts = data.json().texts;*/
             // if(this.messages){
             //     data.json().chat.items.forEach(mess => {
@@ -214,12 +219,12 @@ export class DialogPage {
             //         }
             //     });
             // }else {
-                this.messages = data.json().chat.items;
+                this.messages = data.chat.items;
             // }
-            this.data = data.json();
-            this.countNewMess = data.json().chat.newMess;
-            this.alert = data.json().blacklist != '' ? data.json().blacklist : '';
-            this.contactCurrentReadMessagesNumber = data.json().contactCurrentReadMessagesNumber;
+            this.data = data;
+            this.countNewMess = data.chat.newMess;
+            this.alert = data.blacklist != '' ? data.blacklist : '';
+            this.contactCurrentReadMessagesNumber = data.contactCurrentReadMessagesNumber;
 
             this.scrollToBottom();
         }, err => {
@@ -243,10 +248,10 @@ export class DialogPage {
 
     useFreePointToReadMessage(message) {
         let index = this.api.functiontofindIndexByKeyValue(this.messages, 'id', message.id);
-        this.api.http.get(this.api.url + '/user/chat/useFreePointToReadMessage/' + message.id, this.api.setHeaders(true)).subscribe(data => {
-            this.messages[index].text = data.json().messageText;
+        this.api.http.get(this.api.url + '/user/chat/useFreePointToReadMessage/' + message.id, this.api.setHeaders(true)).subscribe((data: any) => {
+            this.messages[index].text = data.messageText;
             this.setMessagesAsRead([message.id]);
-            if (!data.json().userHasFreePoints) {
+            if (!data.userHasFreePoints) {
                 // Update page
                 this.getPage();
             }
@@ -327,9 +332,9 @@ export class DialogPage {
 
                 var userId = typeof this.user.userId != "undefined" ? this.user.userId : this.user.id;
 
-                this.api.http.post(this.api.url + '/user/chat/' + userId, params, this.api.setHeaders(true)).subscribe(data => {
+                this.api.http.post(this.api.url + '/user/chat/' + userId, params, this.api.setHeaders(true)).subscribe((data: any) => {
 
-                    if (data.json().status == 'chat') {
+                    if (data.status == 'chat') {
                         this.messages.push({
                             id: 0,
                             date: '',
@@ -339,16 +344,16 @@ export class DialogPage {
                             time: '',
                             to: this.user.id
                         });
-                        this.messages = data.json().chat.items;
-                        this.countNewMess = data.json().chat.newMess;
-                    } else if (data.json().status == 'blocked') {
+                        this.messages = data.chat.items;
+                        this.countNewMess = data.chat.newMess;
+                    } else if (data.status == 'blocked') {
                         let toast = this.toastCtrl.create({
-                            message: data.json().message,
+                            message: data.message,
                             duration: 5000
                         });
                         toast.present();
                     }
-                    this.messages = data.json().chat.items;
+                    this.messages = data.chat.items;
                     this.scrollToBottom();
                     this.sendPush();
                 });
@@ -534,9 +539,9 @@ export class DialogPage {
 
     getNewMessages() {
 
-        this.api.http.get(this.api.url + '/user/chat/' + this.reciver_id + '/' + this.contactCurrentReadMessagesNumber + '/refresh', this.api.setHeaders(true)).subscribe(data => {
-            this.contactCurrentReadMessagesNumber = data.json().contactCurrentReadMessagesNumber;
-            if (data.json().chat) {
+        this.api.http.get(this.api.url + '/user/chat/' + this.reciver_id + '/' + this.contactCurrentReadMessagesNumber + '/refresh', this.api.setHeaders(true)).subscribe((data: any) => {
+            this.contactCurrentReadMessagesNumber = data.contactCurrentReadMessagesNumber;
+            if (data.chat) {
                 //this.messages = [];
                 // data.json().chat.items.forEach(mess => {
                 //     let index = this.messages.indexOf(mess);
@@ -546,15 +551,15 @@ export class DialogPage {
                 //         this.messages[index] = mess;
                 //     }
                 // });
-                this.messages = data.json().chat.items;
-                this.countNewMess = data.json().chat.newMess;
+                this.messages = data.chat.items;
+                this.countNewMess = data.chat.newMess;
 
                 this.scrollToBottom();
                 this.api.hideLoad();
 
 
 
-                if (data.json().chat.abilityReadingMessages == 1 ) {
+                if (data.chat.abilityReadingMessages == 1 ) {
 
                     this.countNewMess = 0;
                     var arrMsg = [];
@@ -569,12 +574,12 @@ export class DialogPage {
                     }
 
                 }
-                this.userHasFreePoints = data.json().chat.userHasFreePoints;
+                this.userHasFreePoints = data.chat.userHasFreePoints;
 
                 //let that = this;
 
 
-                if (data.json().isNewMess) {
+                if (data.isNewMess) {
                     this.scrollToBottom();
                 }
 

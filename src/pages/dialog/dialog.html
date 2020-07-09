@@ -38,13 +38,17 @@
                             class="text" width-75>
 <!--                        <ion-card-content [innerHTML]="msg?.text" item-left>-->
 <!--                        </ion-card-content>-->
-                        <ion-card-content *ngIf="checkedImg(msg?.text) === false" item-left [innerHTML]="msg?.text">
+                        <ion-card-content *ngIf="msg.missingCall == '' && checkedImg(msg?.text) === false" item-left [innerHTML]="msg?.text">
                         </ion-card-content>
                         <ion-card-content *ngIf="checkedImg(msg?.text) !== false">
                             <div *ngFor="let img of msgToArr(msg?.text).photos" class="photo" [ngStyle]="{ 'background-image': 'url(' + img.src + '&face=1' + ')'}" (click)="preview(img.src)">
                             </div>
                             <div [innerHTML]="msgToArr(msg?.text)?.text"></div>
                         </ion-card-content>
+                      <ion-card-content *ngIf="msg?.missingCall !== '' && checkedImg(msg?.text) === false" item-left>
+                        <div [innerHTML]="msg?.text"></div>
+                        <div class="click" (click)="toVideoChat()" [innerHTML]="msg?.missingCall"></div>
+                      </ion-card-content>
                     </ion-col>
                     <ion-col *ngIf="msg?.text == 'לא ניתן לצפות בהודעה. לרכישת מנוי לחצי כאן'"
                              class="text" width-75>

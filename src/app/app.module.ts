@@ -11,7 +11,7 @@ import {Media} from "@ionic-native/media";
 import {File} from "@ionic-native/file";
 import {ApiQuery} from "../library/api-query";
 import {IonicStorageModule} from "@ionic/storage";
-import {HttpModule} from "@angular/http";
+// import {HttpModule} from "@angular/http";
 import {Device} from "@ionic-native/device";
 import {MyApp} from "./app.component";
 import {HomePage} from "../pages/home/home";
@@ -60,6 +60,10 @@ import {FullScreenProfilePage} from "../pages/full-screen-profile/full-screen-pr
 import {Market} from "@ionic-native/market";
 import {Push} from "@ionic-native/push";
 import {ImagesPageModule} from "../pages/images/images.module";
+// import { NativeAudio } from '@ionic-native/native-audio';
+// import {WebrtcProvider} from "../providers/webrtc";
+// import {VideoChatPageModule} from "../pages/video-chat/video-chat.module";
+// import {VideoChatPage} from "../pages/video-chat/video-chat";
 
 @NgModule({
   declarations: [
@@ -82,6 +86,7 @@ import {ImagesPageModule} from "../pages/images/images.module";
     }, {
       links: [
         {component: HomePage, name: 'בית', segment: 'home'},
+        {component: HomePage, name: 'וידאו', segment: 'home/:id'},
         {component: ProfilePage, name: 'פרופיל', segment: 'profile/:id', defaultHistory: [HomePage]},
         {
           component: ActivationPage,
@@ -90,6 +95,7 @@ import {ImagesPageModule} from "../pages/images/images.module";
           defaultHistory: [HomePage]
         },
         {component: DialogPage, name: 'Chat', segment: 'dialog/:id', defaultHistory: [HomePage]},
+        // {component: VideoChatPage, name: 'VideoChat', segment: 'video-chat/:id', defaultHistory: [HomePage]},
         {component: FullScreenProfilePage, name: 'Full Screen Profile', segment: 'full-screen-profile', defaultHistory: [HomePage]},
         {component: SubscriptionPage, name: 'Subscription', segment: 'subscription'},
         {component: RegisterPage, name: 'פרופיל שלי', segment: 'edit/:step', defaultHistory: [HomePage]},
@@ -106,7 +112,7 @@ import {ImagesPageModule} from "../pages/images/images.module";
     }),
     AngularFireModule.initializeApp(firebaseConfig),
     IonicStorageModule.forRoot(),
-    HttpModule,
+    // HttpModule,
     RegisterPageModule,
     PageModule,
     SelectPageModule,
@@ -131,7 +137,8 @@ import {ImagesPageModule} from "../pages/images/images.module";
     PasswordRecoveryPageModule,
     RegisterPageModule,
     SearchPageModule,
-    ImagesPageModule
+    ImagesPageModule,
+    // VideoChatPageModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -151,6 +158,7 @@ import {ImagesPageModule} from "../pages/images/images.module";
     FileTransfer,
     Camera,
     FirebaseMessagingProvider,
+    // WebrtcProvider,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     ApiQuery, Media, File,
     Market, Push

@@ -2,7 +2,7 @@ import {Component} from "@angular/core";
 import {IonicPage, NavController, NavParams, ToastController} from "ionic-angular";
 import {HomePage} from "../home/home";
 import {ApiQuery} from "../../library/api-query";
-import {Headers, RequestOptions, Response} from "@angular/http";
+// import {Headers, RequestOptions, Response} from "@angular/http";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import {RegisterPage} from "../register/register";
@@ -11,6 +11,7 @@ import {SubscriptionPage} from "../subscription/subscription";
 import {ChangePhotosPage} from "../change-photos/change-photos";
 import {ActivationPage} from "../activation/activation";
 import {PasswordRecoveryPage} from "../password-recovery/password-recovery";
+import {HttpHeaders} from "@angular/common/http";
 
 /**
  * Generated class for the LoginPage page.
@@ -28,7 +29,7 @@ export class LoginPage {
 
   form: { errors: any, login: any } = {errors: {}, login: {username: {label: ''}, password: {label: ''}}};
   errors: any;
-  header: RequestOptions;
+  header: any = {};
   user: any = {id: '', name: ''};
   fingerAuth: any;
   enableFingerAuth: any;
@@ -40,8 +41,8 @@ export class LoginPage {
               public toastCtrl: ToastController
   ) {
 
-    this.api.http.get(api.url + '/user/form/login', api.setHeaders(false)).subscribe(data => {
-      this.form = data.json();
+    this.api.http.get(this.api.url + '/user/form/login', this.api.setHeaders(false)).subscribe((data:any) => {
+      this.form = data;
       this.api.storage.get('username').then((username) => {
         this.form.login.username.value = username;
         this.user.name = username;
@@ -68,20 +69,20 @@ export class LoginPage {
   }
 
   formSubmit(type) {
-    this.form.login.username.value = this.user.name;
-    let username = encodeURIComponent(this.form.login.username.value);
-    let password = encodeURIComponent(this.form.login.password.value);
+    // this.form.login.username.value = this.user.name;
+    // let username = encodeURIComponent(this.form.login.username.value);
+    // let password = encodeURIComponent(this.form.login.password.value);
+    //
+    // if (username == "") {
+    //   username = "nologin";
+    // }
+    //
+    // if (password == "") {
+    //   password = "nopassword";
+    // }
 
-    if (username == "") {
-      username = "nologin";
-    }
-
-    if (password == "") {
-      password = "nopassword";
-    }
-
-    this.api.http.post(this.api.url + '/user/login/', '', this.setHeaders()).map((res: Response) => res.json()).subscribe(data => { //.map((res: Response) => res.json())
-
+    this.api.http.post(this.api.url + '/user/login/', '', this.setHeaders()).subscribe((data: any) => { //.map((res: Response) => res.json())
+      // const data = res.json();
       setTimeout(function () {
         this.errors = 'משתמש זה נחסם על ידי הנהלת האתר';
       }, 300);
@@ -89,22 +90,24 @@ export class LoginPage {
       this.validate(data);
 
     }, err => {
-      //console.log(err.status);
-      type == 'fingerprint' ? '' : this.errors = err.text();
+      console.log(err);
+      this.errors = type == 'fingerprint' ? '' : err.error;
 
     });
   }
 
   setHeaders() {
-    let myHeaders: Headers = new Headers;
-    myHeaders.append('Content-type', 'application/json');
-    myHeaders.append('Accept', '*/*');
-    myHeaders.append('Access-Control-Allow-Origin', '*');
-    myHeaders.append("Authorization", "Basic " + btoa(encodeURIComponent(this.form.login.username.value) + ':' + encodeURIComponent(this.form.login.password.value)));
 
-    this.header = new RequestOptions({
+    let myHeaders = new HttpHeaders();
+
+    myHeaders = myHeaders.append('Content-type', 'application/json');
+    myHeaders = myHeaders.append('Accept', '*/*');
+    myHeaders = myHeaders.append('Access-Control-Allow-Origin', '*');
+    myHeaders = myHeaders.append("Authorization", "Basic " + btoa(encodeURIComponent(this.form.login.username.value) + ':' + encodeURIComponent(this.form.login.password.value)));
+
+    this.header = {
       headers: myHeaders
-    });
+    };
     return this.header;
   }
 

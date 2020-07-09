@@ -37,8 +37,8 @@ export class AdvancedsearchPage {
             if (data) {
                 this.form = data;
             } else {
-                this.api.http.get(api.url + '/user/advanced/search', api.setHeaders(true)).subscribe(data => {
-                    this.form = data.json().form;
+                this.api.http.get(api.url + '/user/advanced/search', api.setHeaders(true)).subscribe((data: any) => {
+                    this.form = data.form;
                     this.form.heightFrom.value = '';
                     this.form.heightTo.value = '';
 

@@ -35,7 +35,7 @@ export class PasswordRecoveryPage {
 
     formSubmit() {
         if( this.form.form.email.value != "") {
-            this.api.http.get(this.api.url + '/recovery/' + this.form.form.email.value, this.api.header).subscribe(data => this.validate(data.json()));
+            this.api.http.get(this.api.url + '/recovery/' + this.form.form.email.value, this.api.header).subscribe((data: any) => this.validate(data));
         }else{
             this.email_err = "כתובת האימייל שהזנת לא נמצאה במערכת";
         }

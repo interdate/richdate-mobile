@@ -25,10 +25,10 @@ export class Page {
   ) {
     this.api.showLoad();
     this.api.http.get(this.api.url + '/user/page/' + this.navParams.get('pageId'), this.api.setHeaders(false)).subscribe(
-        data => {
+      (data: any) => {
           //alert(JSON.stringify(data));
-          console.log('page: ', data.json());
-          this.page = data.json();
+          console.log('page: ', data);
+          this.page = data;
           this.api.hideLoad();
           $('#content').html(this.page.pageText);
           //this.content.scrollToTop(300);

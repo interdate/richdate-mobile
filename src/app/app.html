@@ -90,9 +90,17 @@
     </ion-content>
 </ion-menu>
 
-<a class="link-banner"  *ngIf="banner?.src != '' && banner?.src != '.' && is_login && api.pageName != 'SubscriptionPage' && api.pageName != 'ChangePhotosPage' && api.pageName != 'ArenaPage' && api.pageName != 'DialogPage' && api.pageName != 'NotificationsPage' && api.pageName != 'FullScreenProfilePage'" href="{{banner?.link}}" target="_blank"> <!-- (click)="goTo();"-->
+<a class="link-banner" *ngIf="banner?.src != '' && banner?.src != '.' && api.pageName == 'LoginPage'" href="{{banner?.link}}" target="_blank">
+  <img class="banner" [ngStyle]="{bottom: 'auto', top: '70px'}" src="{{ banner?.src}}">
+</a>
+<a class="link-banner" *ngIf="banner?.src != '' && banner?.src != '.' && is_login && api.pageName != 'SubscriptionPage' && api.pageName != 'SearchPage' && api.pageName != 'ChangePhotosPage' && api.pageName != 'ArenaPage' && api.pageName != 'DialogPage' && api.pageName != 'NotificationsPage' && api.pageName != 'FullScreenProfilePage'" href="{{banner?.link}}" target="_blank"> <!-- (click)="goTo();"-->
   <img class="banner" src="{{ banner?.src}}">
 </a>
+<!--<a>-->
+<!--<audio id="audio-call" loop>-->
+<!--  <source type="audio/mp3" src="https://m.richdate.co.il/phone_ringing.mp3">-->
+<!--</audio>-->
+<!--</a>-->
 <ion-footer *ngIf="is_login" (swipe)="swipeFooterMenu()">
 
     <div class="footerMenu" position="bottom">

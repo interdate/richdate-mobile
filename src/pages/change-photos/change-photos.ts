@@ -49,7 +49,19 @@ export class ChangePhotosPage {
         if (navParams.get('new_user')) {
             this.new_user = 1;
             this.api.storage.set('new_user', 1);
+            setTimeout(function () {
+              $('.insert-script').html("<script>" +
+                "gtag('event', 'conversion', {'send_to': 'AW-939419019/Z_ThCIq1sqYBEIvL-b8D'});" +
+                "</script>");
+            }, 500);
         }
+
+      // setTimeout(function () {
+      //   $('.insert-script').html("<script>" +
+      //     "gtag('event', 'conversion', {'send_to': 'AW-939419019/Z_ThCIq1sqYBEIvL-b8D'});" +
+      //     "</script>");
+      //   console.log("DIE");
+      // }, 1000);
         this.api.storage.get('user_id').then((val) => {
             this.api.storage.get('username').then((username) => {
                 this.username = username;
@@ -103,12 +115,12 @@ export class ChangePhotosPage {
 
     getPageData() {
 
-        this.api.http.get(this.api.url + '/user/images', this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.get(this.api.url + '/user/images', this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
 
-            this.dataPage = data.json();
-            this.description = data.json().texts.description;
-            this.photos = data.json().images.items;
-            this.gender = data.json().gender;
+            this.dataPage = data;
+            this.description = data.texts.description;
+            this.photos = data.images.items;
+            this.gender = data.gender;
 
         }, err => {
             //alert(JSON.stringify(err));
@@ -139,14 +151,14 @@ export class ChangePhotosPage {
             });
         }
 
-        this.api.http.post(this.api.url + '/user/images/' + action + '/' + params.id, data, this.api.setHeaders(true, this.username, this.password)).subscribe(data => {
+        this.api.http.post(this.api.url + '/user/images/' + action + '/' + params.id, data, this.api.setHeaders(true, this.username, this.password)).subscribe((data: any) => {
 
             if (type != 'setMain') {
-                this.dataPage = data.json();
+                this.dataPage = data;
             } else {
-                this.dataPage.images = data.json().images;
+                this.dataPage.images = data.images;
             }
-            this.photos = data.json().images.items;
+            this.photos = data.images.items;
             this.getPageData();
         }, err => {
             console.log("Oops!");

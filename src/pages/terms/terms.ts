@@ -17,30 +17,30 @@ import {ApiQuery} from '../../library/api-query';
 export class TermsPage {
 
   page: { title: any, content: any } = {title: '', content: ''};
-  
+
       constructor(public navCtrl: NavController,
                   public navParams: NavParams,
                   public api: ApiQuery) {
-  
+
           let id = navParams.get('id');
-  
-          this.api.http.get(api.url + id, this.api.setHeaders(false)).subscribe(data => {
-              this.page = data.json().page;
+
+          this.api.http.get(api.url + id, this.api.setHeaders(false)).subscribe((data: any) => {
+              this.page = data.page;
               console.log(this.page.title);
-  
+
           }, err => {
               console.log("Oops!");
           });
       }
-  
+
       back() {
           this.navCtrl.pop();
       }
-  
+
       ionViewDidLoad() {
           console.log('ionViewDidLoad TermsPage');
       }
-  
+
       ionViewWillEnter() {
           this.api.pageName = 'TermsPage';
       }
